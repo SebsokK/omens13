@@ -37,9 +37,9 @@
     "units": "m"
   },
   "primaryTokenAttribute": "wounds",
-  "url": "",
-  "manifest": "",
-  "download": "",
+  "url": "https://github.com/SebsokK/omens13",
+  "manifest": "https://raw.githubusercontent.com/SebsokK/omens13/main/system.json",
+  "download": "https://github.com/SebsokK/omens13/releases/download/v0.1.15/omens13-0.1.15.zip",
   "license": "LICENSE.txt",
   "readme": "README.md",
   "background": "systems/omens13/assets/branding/showcase.png",
