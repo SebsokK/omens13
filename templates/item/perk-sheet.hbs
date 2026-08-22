@@ -1,0 +1,16 @@
+<form class="omens13 perk-sheet" autocomplete="off">
+  <header class="perk-sheet-header">
+    <img class="perk-icon" src="{{item.img}}" data-action="editImage" data-edit="img" alt="{{item.name}}" />
+    <input type="text" value="{{item.name}}" data-scope="field" data-field="name" placeholder="{{localize 'OMENS13.Sheet.PerkName'}}" class="name-input" />
+  </header>
+
+  <label class="perk-selected-toggle">
+    <input type="checkbox" data-scope="field" data-field="system.selected" {{#if system.selected}}checked{{/if}} />
+    {{localize "OMENS13.Sheet.PerkSelected"}}
+  </label>
+
+  <section class="perk-description">
+    <p class="hint">{{localize "OMENS13.Sheet.PerkEffect"}}</p>
+    {{editor enriched.description target="system.description" button=true engine="prosemirror" collaborate=false editable=editable}}
+  </section>
+</form>

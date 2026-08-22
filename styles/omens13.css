@@ -1,0 +1,1729 @@
+@import url('https://fonts.googleapis.com/css2?family=Epilogue:wght@500;600;700&family=Libre+Caslon+Text:ital@0;1&family=JetBrains+Mono:wght@400;600&display=swap');
+
+/* ==========================================================================
+   13 Omens — thème "Abyssal Omen"
+   Palette : Primary #880000 / Secondary #822222 / Tertiary #4A0000 / Neutral #1A1A1A
+   ========================================================================== */
+
+.omens13 {
+  --o13-primary: #880000;
+  --o13-primary-light: #c94f4f;
+  --o13-secondary: #822222;
+  --o13-tertiary: #4a0000;
+  --o13-bg: #141212;
+  --o13-surface: #1a1a1a;
+  --o13-surface-alt: #221c1c;
+  --o13-border: #4a2020;
+  --o13-text: #ededed;
+  --o13-text-muted: #b8a0a0;
+  --o13-danger: #ff5c5c;
+  --o13-safe-die: #d8d0c8;
+  --o13-omen-die: #b3181f;
+  --o13-owned: #d4af37;
+
+  font-family: "Libre Caslon Text", Georgia, serif;
+  color: var(--o13-text);
+}
+
+/* :not(.window-title)/:not(.header-control) partout dans ce fichier où c'est
+   pertinent : DEFAULT_OPTIONS.classes (["omens13", ...]) s'applique à l'élément
+   .application EXTÉRIEUR de la fenêtre Foundry sur les Sheets/ApplicationV2 (fiche
+   de perso, Dice Bag), qui contient aussi le chrome natif de la fenêtre
+   (.window-header avec son titre .window-title et ses boutons minimiser/pop-out/
+   fermer .header-control), pas seulement notre propre contenu. Sans cette exclusion,
+   nos règles génériques (h1/button/input...) s'appliquaient aussi à ce chrome natif —
+   c'est ce qui rendait les icônes de la barre de titre "cassées" (police Epilogue
+   écrasant la police d'icônes de ces boutons, qui affichait alors des carrés vides
+   au lieu des glyphes). Une exclusion via :not() plutôt qu'un scope ".window-content"
+   est nécessaire ici car, dans les boîtes de dialogue (DialogV2), c'est l'inverse :
+   .omens13 est à l'INTÉRIEUR de .window-content (sur le formulaire de contenu), pas
+   sur le wrapper extérieur — un scope basé sur l'ordre des ancêtres casserait l'un
+   des deux cas. */
+.omens13 h1:not(.window-title), .omens13 h2, .omens13 h3 {
+  font-family: "Epilogue", "Segoe UI", sans-serif;
+  color: var(--o13-text);
+  letter-spacing: 0.03em;
+  margin: 0;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5em;
+}
+
+/* Les titres de section sont volontairement traités comme des labels discrets
+   (petits, majuscules, monospace) plutôt que comme de gros titres de page. */
+.omens13 h2 {
+  font-size: 0.72em;
+  font-weight: 600;
+  font-family: "JetBrains Mono", monospace;
+  text-transform: uppercase;
+  color: var(--o13-primary-light);
+  border-bottom: 1px solid var(--o13-border);
+  padding-bottom: 0.25em;
+  margin-bottom: 0.4em;
+}
+
+.omens13 .window-content,
+.omens13.sheet {
+  background: var(--o13-bg);
+  color: var(--o13-text);
+}
+
+/* Foundry ajoute un padding par défaut à .window-content : on le retire pour que
+   nos textures de fond (papier, post-it) remplissent toute la fenêtre, et on
+   redonne l'espacement via le padding interne de nos propres conteneurs
+   (.character-sheet / .dice-bag-panel ont déjà leur propre padding). */
+.omens13.sheet .window-content,
+.omens13.dice-bag-app .window-content {
+  padding: 0;
+}
+
+.omens13 input, .omens13 select, .omens13 textarea {
+  background: var(--o13-surface);
+  border: 1px solid var(--o13-border);
+  color: var(--o13-text);
+  border-radius: 3px;
+  font-family: "JetBrains Mono", "Courier New", monospace;
+  padding: 2px 6px;
+}
+
+.omens13 input[type="text"]:focus, .omens13 select:focus, .omens13 textarea:focus {
+  outline: none;
+  border-color: var(--o13-primary-light);
+  box-shadow: 0 0 0 1px var(--o13-primary-light);
+}
+
+/* :not(.header-control) : voir la note plus haut sur .window-title — même bug pour
+   les boutons minimiser/pop-out/fermer natifs de la fenêtre (classe Foundry
+   "header-control"), qui héritaient sinon de la police Epilogue à la place de la
+   police d'icônes, d'où des carrés vides au lieu des glyphes. */
+.omens13 button:not(.header-control) {
+  background: var(--o13-surface-alt);
+  border: 1px solid var(--o13-secondary);
+  color: var(--o13-text);
+  border-radius: 4px;
+  font-family: "Epilogue", sans-serif;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.omens13 button:not(.header-control):hover {
+  background: var(--o13-primary);
+  border-color: var(--o13-primary-light);
+}
+
+/* Barre de défilement thémée (14e itération) : Foundry tourne sur Electron/
+   Chromium, donc les pseudo-éléments ::-webkit-scrollbar sont fiables ici —
+   scrollbar-width/-color en complément pour Firefox si jamais le système est
+   un jour ouvert dans un navigateur. S'applique à tout élément défilant à
+   l'intérieur d'une fenêtre 13 Omens (fiche, Dice Bag, éditeurs ProseMirror,
+   etc.), pas seulement .character-sheet. */
+.omens13 {
+  scrollbar-width: thin;
+  scrollbar-color: var(--o13-primary) var(--o13-surface);
+}
+
+.omens13 ::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.omens13 ::-webkit-scrollbar-track {
+  background: var(--o13-surface);
+}
+
+.omens13 ::-webkit-scrollbar-thumb {
+  background: var(--o13-primary);
+  border-radius: 6px;
+  border: 2px solid var(--o13-surface);
+}
+
+.omens13 ::-webkit-scrollbar-thumb:hover {
+  background: var(--o13-primary-light);
+}
+
+/* -------------------------------------------- */
+/*  Fiche de personnage                          */
+/* -------------------------------------------- */
+
+/* height: 100% + overflow: auto (14e itération) : PARTS.form déclare déjà
+   `scrollable: [""]`, ce qui indique à Foundry de mémoriser/restaurer le
+   scrollTop de cet élément entre deux rendus — mais ce mécanisme ne fournit
+   PAS lui-même l'`overflow` CSS qui permet à un scroll d'apparaître : sans
+   cette règle, tout contenu dépassant le cadre de la fenêtre (Perks/Gear
+   nombreux, fenêtre redimensionnée plus petite que 820px de haut) était tout
+   simplement invisible, coupé net par le cadre de la fenêtre Foundry, sans
+   aucune barre de défilement. overflow-x: auto est un filet de sécurité
+   symétrique pour l'axe horizontal (voir aussi le plancher de largeur sur
+   .aspect-block plus bas) : si jamais la fenêtre est redimensionnée plus
+   étroite que ce dont les tableaux d'Aspects ont besoin, on obtient un
+   défilement horizontal plutôt que du texte/des cases à cocher coupés net. */
+.omens13.character-sheet {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75em;
+  padding: 0.5em;
+  height: 100%;
+  box-sizing: border-box;
+  overflow-y: auto;
+  overflow-x: auto;
+  background-image:
+    linear-gradient(rgba(12, 10, 10, 0.9), rgba(12, 10, 10, 0.9)),
+    url("../assets/textures/sheet-paper.png");
+  background-size: cover;
+  background-position: top center;
+  background-repeat: no-repeat;
+}
+
+.omens13 .logo-banner {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.omens13 .logo-banner img {
+  max-width: 260px;
+  width: 100%;
+  height: auto;
+  filter: drop-shadow(0 0 6px rgba(136, 0, 0, 0.55));
+}
+
+.omens13 .sheet-tabs {
+  position: absolute;
+  right: 0.4em;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  gap: 0.3em;
+}
+
+.omens13 .sheet-tabs a {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.7em;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 4px 10px;
+  border: 1px solid var(--o13-border);
+  border-radius: 4px;
+  color: var(--o13-text-muted);
+  cursor: pointer;
+  background: var(--o13-surface-alt);
+}
+
+.omens13 .sheet-tabs a:hover {
+  color: var(--o13-text);
+}
+
+.omens13 .sheet-tabs a.active {
+  color: var(--o13-text);
+  background: var(--o13-primary);
+  border-color: var(--o13-primary-light);
+}
+
+.omens13 .tab-panel {
+  display: none;
+  flex-direction: column;
+  gap: 0.75em;
+}
+
+.omens13 .tab-panel.active {
+  display: flex;
+}
+
+.omens13 .sheet-header {
+  display: flex;
+  align-items: stretch;
+  gap: 0.75em;
+  background: var(--o13-surface);
+  border: 1px solid var(--o13-border);
+  border-radius: 6px;
+  padding: 0.5em;
+}
+
+.omens13 .sheet-header .portrait {
+  width: 110px;
+  height: 150px;
+  flex: 0 0 auto;
+  object-fit: cover;
+  object-position: top center;
+  border: 2px solid var(--o13-primary);
+  border-radius: 4px;
+}
+
+.omens13 .header-fields {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3em;
+  min-width: 0;
+}
+
+/* .name-traits-row (19e itération, remplace le position:absolute + margin-right
+   des 17e/18e itérations) : Nom/Traits et le badge Blessures sont maintenant de
+   VRAIS frères flex côte à côte (Nom+Traits en flex:1, Blessures en flex:0 0
+   auto), donc un chevauchement entre eux est structurellement impossible — plus
+   besoin de deviner/ajuster une marge en pixels pour réserver la largeur du
+   badge (ce qui avait déjà échoué deux fois de suite : padding puis margin,
+   toujours un peu trop juste). L'encart Goal reste hors de cette rangée, dans
+   .header-fields directement, donc il continue de s'étendre sur toute la
+   largeur (y compris sous Blessures) comme demandé. */
+.omens13 .name-traits-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5em;
+}
+
+.omens13 .name-traits-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3em;
+  min-width: 0;
+}
+
+.omens13 .name-input {
+  font-family: "Epilogue", sans-serif;
+  font-size: 1.3em;
+  font-weight: 700;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--o13-border);
+}
+
+.omens13 .traits-input {
+  background: transparent;
+  border: none;
+  border-bottom: 1px dashed var(--o13-border);
+  font-style: italic;
+  color: var(--o13-text-muted);
+}
+
+/* Bloc "Goal" (ProseMirror) sous Traits, dans l'en-tête. Volontairement plus
+   compact que l'éditeur de Notes (qui occupe tout son propre onglet), mais
+   jamais tronqué : overflow visible et pas de max-height, le conteneur de
+   l'en-tête grandit avec le contenu plutôt que de le couper. */
+.omens13 .goal-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15em;
+  min-height: 0;
+}
+
+.omens13 .goal-label {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.7em;
+  text-transform: uppercase;
+  color: var(--o13-text-muted);
+}
+
+/* width: 100% + box-sizing (16e itération) : sans ça, l'encart Goal ne
+   s'étirait pas jusqu'au bord du bloc d'en-tête (l'éditeur ProseMirror ne
+   reprend pas automatiquement toute la largeur disponible malgré le flex
+   column parent) — d'où l'espace vide constaté à droite, entre la boîte et
+   l'icone Blessures. padding-right dégagé pour ne plus jamais passer sous le
+   crayon "Éditer" (positionné en absolute en haut à droite), qui pouvait
+   chevaucher la dernière ligne du texte. */
+.omens13 .goal-field .editor {
+  min-height: 44px;
+  overflow: visible;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.omens13 .goal-field .editor-content {
+  min-height: 30px;
+  padding: 0.25em 1.7em 0.25em 0.4em;
+  font-size: 0.85em;
+  overflow: visible;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* .wounds-summary est un simple frère flex de .name-traits-col dans
+   .name-traits-row (19e itération) — voir le commentaire détaillé plus haut
+   sur .name-traits-row. flex: 0 0 auto : garde sa largeur naturelle (icône +
+   libellé + valeur) sans être écrasé ni étiré par le flex:1 de la colonne
+   Nom/Traits. */
+.omens13 .wounds-summary {
+  flex: 0 0 auto;
+  text-align: center;
+  font-family: "JetBrains Mono", monospace;
+}
+
+.omens13 .wounds-summary .death-icon {
+  width: 22px;
+  height: auto;
+  display: block;
+  margin: 0 auto 2px;
+  opacity: 0.85;
+}
+
+.omens13 .wounds-summary .label {
+  display: block;
+  font-size: 0.75em;
+  text-transform: uppercase;
+  color: var(--o13-text-muted);
+}
+
+.omens13 .wounds-summary .value {
+  font-size: 1.4em;
+  font-weight: 600;
+}
+
+.omens13 .wounds-summary .value.danger {
+  color: var(--o13-danger);
+}
+
+.omens13 .aspects.two-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75em;
+}
+
+/* Plancher de largeur en px sur les colonnes de la grille (13e → 14e itération).
+   Par défaut, un item de CSS Grid a un min-width AUTO basé sur le contenu le
+   plus large de ses descendants (ici le <select> de Notation), et NON sur la
+   largeur qui lui est allouée (1fr) — même avec table-layout: fixed sur le
+   tableau. La grille grandissait donc au-delà de la fiche pour accueillir ce
+   contenu, poussant la colonne Strain hors champ ("tableau qui prend une
+   largeur folle", 13e itération). Un simple min-width: 0 corrigeait bien le
+   débordement, mais laissait ensuite la colonne se comprimer SANS PLANCHER si
+   la fenêtre était redimensionnée plus étroite que 760px — au point d'écraser
+   la case Strain et de tronquer l'en-tête "Strain" (14e itération). Remplacé
+   par un plancher fixe (260px) : suffisant pour garder le libellé, le select,
+   le TN et la case Strain lisibles, quelle que soit la fenêtre. En dessous de
+   2×260px + le gap, c'est .character-sheet (overflow-x: auto, voir plus haut)
+   qui prend le relais avec un défilement horizontal plutôt que de tout couper. */
+.omens13 .aspects.two-columns > .aspect-block {
+  min-width: 260px;
+}
+
+/* table-layout: fixed + largeurs explicites identiques sur les deux tableaux
+   (Core et Story Aspects partagent exactement la même classe .aspect-table) :
+   ça garantit une mise en page rigoureusement identique entre les deux, et
+   empêche le <select> de Notation de se faire écraser par un texte de libellé
+   trop long (cause du texte tronqué signalé en test). */
+.omens13 .aspect-table {
+  width: 100%;
+  min-width: 0;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.omens13 .aspect-table th {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.7em;
+  text-transform: uppercase;
+  color: var(--o13-text-muted);
+  text-align: left;
+  border-bottom: 1px solid var(--o13-border);
+  padding: 2px 4px;
+}
+
+.omens13 .aspect-table td {
+  padding: 3px 4px;
+  border-bottom: 1px solid rgba(74, 32, 32, 0.4);
+  vertical-align: middle;
+}
+
+/* Le libellé d'Aspect ne doit JAMAIS passer sur deux lignes (12e itération) :
+   contrairement à la décision initiale ("pas de troncature"), l'utilisateur a
+   testé en jeu et préfère une seule ligne, avec ellipsis en filet de sécurité
+   si un libellé de Story Aspect s'avérait vraiment trop long. Police alignée sur
+   celle des Perks/Gear (JetBrains Mono, comme les <input> de ces sections) —
+   plus lisible que la police serif par défaut du corps de fiche, jugée "moche"
+   ici. */
+.omens13 .aspect-table .col-label {
+  width: 40%;
+  font-family: "JetBrains Mono", "Courier New", monospace;
+  font-size: 0.82em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.omens13 .aspect-table .col-label .empty-hint {
+  color: var(--o13-text-muted);
+  font-style: italic;
+}
+
+/* Largeur réduite (14e itération) : "Terrible", le plus long des libellés de
+   Notation, tient largement dans 25% — la largeur libérée est redonnée à TN
+   et surtout à Strain, qui restait coupée malgré le plancher de 260px posé
+   sur le bloc Aspect. */
+.omens13 .aspect-table .col-rating {
+  width: 25%;
+}
+
+.omens13 .aspect-table .col-rating select {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  font-size: 0.78em;
+  padding: 2px 3px;
+}
+
+.omens13 .aspect-table .col-tn {
+  width: 17%;
+  font-family: "JetBrains Mono", monospace;
+  text-align: center;
+  color: var(--o13-primary-light);
+  font-weight: 600;
+}
+
+.omens13 .aspect-table .col-strain {
+  width: 18%;
+  text-align: center;
+}
+
+/* Ligne d'Aspect entièrement cliquable (12e itération) : auparavant seule la
+   cellule TN déclenchait le Check et portait le hover rouge. Le hover et le
+   curseur pointer sont maintenant sur toute la <tr> (".rollable" absent si la
+   Notation est vide, donc pas de TN — la ligne reste cliquable mais sans
+   invitation visuelle, voir #activateAspectRowClicks côté JS qui exclut aussi
+   explicitement les clics sur le <select> de Notation et la case Strain). Le
+   hover est appliqué aux <td> plutôt qu'à la <tr> pour un rendu cohérent avec
+   les bordures de cellules. */
+.omens13 .aspect-table tr.aspect-row.rollable {
+  cursor: pointer;
+}
+
+.omens13 .aspect-table tr.aspect-row.rollable:hover td {
+  background: rgba(136, 0, 0, 0.35);
+  color: var(--o13-text);
+}
+
+/* Aspect Strained (32e itération) : repère visuel permanent sur toute la ligne
+   (pas seulement la case à cocher) pour qu'on comprenne d'un coup d'œil que cet
+   Aspect est blessé — fond teinté de rouge + libellé en rouge. Spécificité
+   volontairement plus faible que la règle de hover ci-dessus (2 classes ici
+   contre 2 classes + :hover), pour que le survol continue à primer visuellement
+   pendant le clic. */
+.omens13 .aspect-table tr.aspect-row.strained td {
+  background: rgba(255, 92, 92, 0.12);
+}
+
+.omens13 .aspect-table tr.aspect-row.strained .col-label {
+  color: var(--o13-danger);
+  font-weight: 600;
+}
+
+.omens13 .edit-button {
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  font-size: 0.85em;
+  flex: 0 0 auto;
+}
+
+/* Bouton fantôme (invisible, non interactif) placé sur l'en-tête "Core Aspects"
+   pour occuper exactement le même espace que le vrai bouton EDIT des Story
+   Aspects : ça garantit que les deux en-têtes de tableau (et donc les deux
+   tableaux en dessous) sont strictement alignés à la même hauteur. */
+.omens13 .edit-button.spacer {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* 24e itération : retour utilisateur — Gear doit avoir la MÊME présentation
+   que Perks, pas l'inverse de ce qui avait été fait en 23e itération (un
+   malentendu sur "enlever les cadres du bloc GEAR", qui visait les cadres
+   INTERNES, pas le cadre de section). Donc : `.gear` rejoint `.perks`/
+   `.notes` avec un seul encadré autour de tout le bloc, et ce sont les LIGNES
+   à l'intérieur qui perdent leur cadre individuel (voir .gear-row plus bas). */
+.omens13 .perks, .omens13 .gear, .omens13 .notes {
+  background: var(--o13-surface);
+  border: 1px solid var(--o13-border);
+  border-radius: 6px;
+  padding: 0.5em;
+}
+
+.omens13 .notes {
+  background-image:
+    linear-gradient(rgba(20, 18, 18, 0.86), rgba(20, 18, 18, 0.86)),
+    url("../assets/textures/postit.png");
+  background-size: cover;
+  background-position: center;
+}
+
+/* Lignes de Gear sans cadre individuel (24e itération, même traitement que
+   les Perks) : un filet de séparation entre lignes plutôt qu'une boîte par
+   ligne, et le champ texte lui-même perd son fond/bordure d'input pour
+   flotter dans la ligne (le focus reste visible via le box-shadow de la
+   règle générique :focus, qui ne dépend pas d'une bordure existante). */
+.omens13 .gear-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
+  padding: 0.4em 0;
+  border-bottom: 1px solid var(--o13-border);
+}
+
+.omens13 .gear-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.omens13 .gear-row input[type="text"] {
+  flex: 1;
+  border: none;
+  background: transparent;
+  border-radius: 3px;
+}
+
+/* Icône Effacer masquée par défaut, révélée au survol de la ligne — même
+   principe que .perk-header .delete-button (23e itération). */
+.omens13 .gear-row .delete-button {
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.omens13 .gear-row:hover .delete-button {
+  opacity: 1;
+}
+
+/* Perks (20e itération) : chaque Perk est un Item embarqué affiché en
+   accordéon — une ligne "checkbox + nom" toujours visible, une description
+   ProseMirror repliée par défaut qu'on déplie via le chevron.
+   22e itération — "trop de cadres" (retour utilisateur) : la carte encadrée
+   par Perk (bordure + coins arrondis) est remplacée par un simple filet de
+   séparation en bas de ligne, beaucoup plus léger. Voir aussi .perk-body
+   .editor plus bas pour la description, qui perd elle aussi son cadre. */
+.omens13 .perk-item {
+  padding: 0.4em 0;
+  border-bottom: 1px solid var(--o13-border);
+}
+
+.omens13 .perk-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.omens13 .perk-header {
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
+}
+
+/* Case "Perk possédé" — bouton rond doré/jaune (32e itération, retour couleur en 34e) :
+   avant la 32e itération, cette case (system.selected) avait exactement le même look
+   natif que la case Strain d'Aspect, alors qu'elle représente autre chose ("je possède
+   ce Perk"). Repensée en bouton rond plein quand coché, pour ne plus confondre les deux
+   avec .perk-strain-toggle ci-dessous. La 32e/33e itération l'avaient posée en rouge
+   (var(--o13-danger)), mais l'utilisateur a demandé en 34e itération une couleur
+   distincte du rouge Strain — jaune/doré (var(--o13-owned)), comme avant la refonte. */
+.omens13 input.perk-owned {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  border-radius: 50%;
+  border: 2px solid var(--o13-border);
+  background: transparent;
+  cursor: pointer;
+  flex: 0 0 auto;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.omens13 input.perk-owned:hover {
+  border-color: var(--o13-owned);
+}
+
+.omens13 input.perk-owned:checked {
+  background: var(--o13-owned);
+  border-color: var(--o13-owned);
+}
+
+/* Case Strain — Perks ET Aspects (33e itération, corrige la 32e) : la 32e
+   itération avait laissé ces deux cases sans AUCUN style (juste `cursor` pour
+   la version Perk), ce qui les faisait retomber sur l'apparence par défaut du
+   thème de formulaires coeur de Foundry — un carré plein "doré/jaune" une fois
+   coché, très différent du bouton rond de .perk-owned juste à côté et
+   incohérent avec la palette "Abyssal Omen". Repris avec le même traitement
+   `appearance:none` que .perk-owned, mais en carré (plutôt qu'en rond) pour
+   rester visuellement distinct du bouton "possédé" — couleur d'accent rouge
+   (var(--o13-danger)) une fois cochés, cohérente avec l'effet visuel Strain sur
+   la ligne (voir .strained plus loin pour les Perks, .col-strain.strained pour
+   les Aspects). Depuis la 34e itération, .perk-owned est repassé au jaune/doré
+   (var(--o13-owned)) pour rester bien distinct visuellement de ces deux cases
+   Strain, qui restent rouges. Toujours visible (contrairement à Renommer/
+   Effacer, qui restent en hover-only sur les Perks). Aucun effet mécanique sur
+   les Perks ; force un Flaw sur les Aspects (voir check-dialog.mjs) — dans les
+   deux cas, purement une case à cocher standard côté binding (data-scope, voir
+   #activateManualFields). */
+.omens13 input.aspect-strain-toggle,
+.omens13 input.perk-strain-toggle {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  width: 15px;
+  height: 15px;
+  margin: 0;
+  border-radius: 3px;
+  border: 2px solid var(--o13-border);
+  background: transparent;
+  cursor: pointer;
+  flex: 0 0 auto;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.omens13 input.aspect-strain-toggle:hover,
+.omens13 input.perk-strain-toggle:hover {
+  border-color: var(--o13-danger);
+}
+
+.omens13 input.aspect-strain-toggle:checked,
+.omens13 input.perk-strain-toggle:checked {
+  background: var(--o13-danger);
+  border-color: var(--o13-danger);
+}
+
+/* Filet de sécurité : si le CSS coeur de Foundry dessine sa coche via un
+   pseudo-élément plutôt que via `background`/`appearance` (ce qui expliquerait
+   que la coche dorée par défaut ait survécu à `appearance:none` sur .perk-owned
+   dans certains cas), on neutralise explicitement tout ::before/::after sur nos
+   trois cases personnalisées pour ne jamais laisser filtrer un glyphe hérité. */
+.omens13 input.perk-owned::before,
+.omens13 input.perk-owned::after,
+.omens13 input.aspect-strain-toggle::before,
+.omens13 input.aspect-strain-toggle::after,
+.omens13 input.perk-strain-toggle::before,
+.omens13 input.perk-strain-toggle::after {
+  content: none !important;
+}
+
+.omens13 .perk-item.strained .perk-title,
+.omens13 .perk-item.strained .perk-name-input {
+  color: var(--o13-danger);
+}
+
+.omens13 .perk-item.strained .perk-header {
+  background: rgba(255, 92, 92, 0.12);
+  border-radius: 4px;
+}
+
+/* Bouton Effacer assorti à la taille du bouton Éditer (24e itération, retour
+   utilisateur) : plus petit que le .delete-button générique (26px, utilisé
+   ailleurs comme dans Gear), pour que EDITER/EFFACER se répondent visuellement
+   dans la ligne d'un Perk. */
+.omens13 .perk-header .delete-button {
+  width: 22px;
+  height: 22px;
+}
+
+/* Titre du Perk (21e itération) : un <span> cliquable par défaut (hover
+   rouge, clic = envoi au Chat, voir #onSendPerkToChat) plutôt qu'un input —
+   l'input de renommage (.perk-name-input) reste dans le DOM mais caché, et
+   n'apparaît qu'en mode ".renaming" (basculé par le bouton crayon, voir
+   #onRenamePerk) : les deux usages (envoyer au Chat / renommer) ne peuvent
+   pas partager le même clic sur le même élément. */
+.omens13 .perk-title {
+  flex: 1;
+  min-width: 0;
+  cursor: pointer;
+  padding: 3px 5px;
+  border-radius: 3px;
+  font-family: "JetBrains Mono", "Courier New", monospace;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: background 0.15s, color 0.15s;
+}
+
+.omens13 .perk-title:hover {
+  background: rgba(136, 0, 0, 0.35);
+  color: var(--o13-text);
+}
+
+.omens13 .perk-name-input {
+  display: none;
+  flex: 1;
+  min-width: 0;
+}
+
+.omens13 .perk-item.renaming .perk-title {
+  display: none;
+}
+
+.omens13 .perk-item.renaming .perk-name-input {
+  display: block;
+}
+
+/* Chevron "déplier" recalé sur la même boîte que Éditer/Effacer (22px, au
+   lieu de 26px) pour que les trois boutons alignés à droite s'assortissent
+   (24e itération) — l'icône elle-même reste plus petite (voir .perk-toggle i
+   plus bas) pour rester visuellement plus discrète que les deux actions. */
+.omens13 .perk-toggle {
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  flex: 0 0 auto;
+}
+
+/* Bouton "déplier" en vrai mode fantôme (23e itération, retour utilisateur :
+   seul ce bouton reste visible en permanence, les autres passent en survol
+   uniquement — voir .rename-button/.delete-button plus bas). Le sélecteur
+   `.omens13 button.perk-toggle` (avec l'élément `button`) est nécessaire pour
+   égaliser la spécificité avec la règle générique `.omens13
+   button:not(.header-control)` (qui pose fond + bordure) : à spécificité
+   égale, l'ordre de déclaration (cette règle est plus bas dans le fichier)
+   tranche en faveur du style fantôme. Sans l'élément `button` ici, la règle
+   générique gagnait quand même malgré `background:transparent;border:none;`
+   posés plus haut — c'est resté invisible jusqu'ici. */
+.omens13 button.perk-toggle {
+  background: transparent;
+  border: none;
+}
+
+.omens13 .perk-toggle i {
+  font-size: 0.8em;
+  color: var(--o13-text-muted);
+  transition: color 0.15s ease, transform 0.15s ease;
+}
+
+.omens13 .perk-toggle:hover i {
+  color: var(--o13-primary-light);
+}
+
+.omens13 .perk-item.expanded .perk-toggle i {
+  transform: rotate(180deg);
+}
+
+/* Renommer/Supprimer masqués par défaut, révélés au survol de la ligne
+   (23e itération) — seul le chevron "déplier" reste visible en permanence. */
+.omens13 .perk-header .rename-button,
+.omens13 .perk-header .delete-button {
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.omens13 .perk-header:hover .rename-button,
+.omens13 .perk-header:hover .delete-button {
+  opacity: 1;
+}
+
+/* padding-left aligné approximativement sous le titre (largeur case à cocher
+   + espace) plutôt que collé au bord gauche : la description se lit dans le
+   prolongement visuel du nom du Perk au-dessus, pas comme un bloc à part. */
+.omens13 .perk-body {
+  display: none;
+  padding: 0 1.8em 0 1.7em;
+}
+
+.omens13 .perk-item.expanded .perk-body {
+  display: block;
+  padding-top: 0.3em;
+  padding-bottom: 0.2em;
+}
+
+/* Description "sans cadre" (22e itération, retour utilisateur : trop de
+   cadres, composition à faire respirer) : contrairement à Notes/Goal, la
+   description d'un Perk n'a plus de boîte visible (ni bordure ni fond) — le
+   texte flotte directement sur le fond de la fiche. Les min-height globaux
+   de .editor/.editor-content (120px/90px plus bas, pensés pour Notes/Goal
+   qui occupent tout un bloc dédié) sont aussi réduits ici pour que
+   l'accordéon épouse la taille réelle du texte, tout en gardant un minimum
+   pour rester cliquable quand la description est vide. Le padding-right sur
+   .editor-content est conservé : le crayon "Éditer" reste en position
+   absolute par-dessus le texte, même sans cadre autour. */
+.omens13 .perk-body .editor {
+  border: none;
+  background: transparent;
+  min-height: 0;
+}
+
+.omens13 .perk-body .editor-content {
+  padding: 0 1.8em 0 0;
+  min-height: 1.4em;
+}
+
+.omens13 .add-button, .omens13 .delete-button {
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  flex: 0 0 auto;
+}
+
+/* -------------------------------------------- */
+/*  Boîtes de dialogue (DialogV2) : Check, Story Aspects... */
+/* -------------------------------------------- */
+
+.omens13 .form-group {
+  margin-bottom: 0.6em;
+}
+
+.omens13 .form-group label {
+  display: block;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.75em;
+  text-transform: uppercase;
+  color: var(--o13-text-muted);
+  margin-bottom: 0.2em;
+}
+
+.omens13 .form-group.checkbox label {
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
+  text-transform: none;
+}
+
+.omens13 .form-group input[type="text"],
+.omens13 .form-group input[type="number"],
+.omens13 .form-group select {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Pop-up de Check (24e itération, reskin demandé) : la fenêtre récupère
+   `classes:["omens13"]` (voir check-dialog.mjs) plutôt que de compter
+   uniquement sur le <form class="omens13"> du contenu — sans ça, le pied de
+   page (boutons Draw dice/Cancel), rendu par DialogV2 en dehors du HTML
+   qu'on lui passe, restait sur le thème par défaut de Foundry au lieu
+   d'hériter des couleurs/polices "Abyssal Omen". Layout en ligne (libellé à
+   gauche sur une largeur fixe, champ à droite) plutôt qu'empilé : avec
+   `position:{width:400}` (check-dialog.mjs) ça donne assez de place au
+   libellé le plus long ("Host-forced Omen (Facing Evil)") pour tenir sur
+   une ou deux lignes au lieu de se retrouver un mot par ligne dans une
+   colonne trop étroite. */
+.omens13 .check-dialog {
+  padding: 0.4em 0.2em;
+}
+
+.omens13 .check-dialog .hint {
+  margin-bottom: 0.8em;
+}
+
+/* Rappel "Aspect Strained -> 1 Flaw obligatoire" (32e itération), affiché
+   seulement quand promptCheckOptions() reçoit strained:true (check-dialog.mjs). */
+.omens13 .check-dialog .hint.strained-hint {
+  color: var(--o13-danger);
+  font-weight: 600;
+}
+
+.omens13 .check-dialog .form-group {
+  display: flex;
+  align-items: center;
+  gap: 0.8em;
+}
+
+.omens13 .check-dialog .form-group label {
+  flex: 0 0 165px;
+  margin-bottom: 0;
+  line-height: 1.25;
+}
+
+.omens13 .check-dialog .form-group select,
+.omens13 .check-dialog .form-group input[type="number"] {
+  flex: 1;
+  width: auto;
+}
+
+.omens13 .check-dialog .form-group.checkbox {
+  gap: 0;
+}
+
+.omens13 .check-dialog .form-group.checkbox label {
+  flex: 1;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.75em;
+  text-transform: uppercase;
+  color: var(--o13-text-muted);
+}
+
+.omens13 .delete-button {
+  border-color: var(--o13-danger);
+}
+
+/* -------------------------------------------- */
+/*  Éditeur ProseMirror (voir guide de référence) */
+/* -------------------------------------------- */
+
+.omens13 .editor {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--o13-border);
+  min-height: 120px;
+  overflow: visible;
+  background: var(--o13-surface);
+  border-radius: 4px;
+}
+
+.omens13 .editor a.editor-edit {
+  position: absolute;
+  top: 4px;
+  right: 6px;
+  opacity: 0.6;
+  transition: opacity 0.15s;
+  color: var(--o13-primary-light);
+}
+
+.omens13 .editor:hover a.editor-edit {
+  opacity: 1;
+}
+
+/* Crayon "Éditer" de la description de Perk : masqué par défaut (0 au lieu
+   de 0.6 comme Notes/Goal) plutôt qu'estompé, pour rester cohérent avec les
+   autres boutons de la ligne qui n'apparaissent qu'au survol (23e itération).
+   Scopé à .perk-body seulement — Notes/Goal gardent leur crayon semi-visible
+   en permanence, pas de demande de changement là-dessus. */
+.omens13 .perk-body .editor a.editor-edit {
+  opacity: 0;
+}
+
+.omens13 .perk-body .editor:hover a.editor-edit {
+  opacity: 1;
+}
+
+.omens13 .editor .menu-container menu.editor-menu {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  list-style: none !important;
+  background: var(--o13-surface-alt);
+  margin: 0;
+  padding: 2px;
+}
+
+.omens13 .editor .menu-container menu.editor-menu > li {
+  display: inline-flex !important;
+  position: relative;
+}
+
+.omens13 .editor .menu-container menu.editor-menu ul {
+  display: none !important;
+  position: absolute !important;
+  top: 100% !important;
+  z-index: 300 !important;
+  background: var(--o13-surface-alt);
+  border: 1px solid var(--o13-border);
+}
+
+.omens13 .editor button,
+.omens13 .editor button:hover {
+  background: unset;
+  border: unset;
+  border-radius: unset;
+  color: unset;
+  padding: unset;
+  font-size: unset;
+  /* 33e itération : les boutons de la barre d'outils ProseMirror (B, H1, listes...)
+     héritaient d'un font-weight en gras posé par le CSS coeur de Foundry, jamais
+     neutralisé jusqu'ici (absent de ce reset). */
+  font-weight: normal;
+}
+
+/* padding-right dégagé (16e itération) pour ne jamais passer sous le crayon
+   "Éditer" (voir la même remarque sur .goal-field .editor-content plus haut) —
+   appliqué ici aussi à l'éditeur de Notes en prévention, même mécanisme de
+   bouton en position absolute.
+   font-family (21e itération) : ce bloc n'avait jamais de police explicite,
+   donc en théorie il aurait dû hériter du serif de thème posé sur .omens13
+   (Libre Caslon Text) — dans les faits, le CSS coeur de ProseMirror/Foundry
+   pose sa propre police système sur .editor-content/.ProseMirror avec une
+   spécificité qui prime sur l'héritage, d'où la police "par défaut" visible
+   à l'écran (ni Libre Caslon Text, ni Epilogue). On la fixe ici explicitement
+   sur Epilogue (police de corps de texte du thème) pour trancher, quelle que
+   soit la source du remplacement. */
+.omens13 .editor-content {
+  padding: 0.4em 1.8em 0.4em 0.4em;
+  min-height: 90px;
+  font-family: "Epilogue", sans-serif;
+}
+
+/* Titres tapés PAR L'UTILISATEUR à l'intérieur d'un texte ProseMirror (H1/H2/H3...
+   depuis le menu de formatage) — 33e itération, retour utilisateur : "le H1 est
+   vraiment trop gros". La règle générique `.omens13 h1:not(.window-title), h2, h3`
+   (tout en haut du fichier) est pensée pour les TITRES DE SECTION de la fiche
+   (Perks, Notes...), pas pour du texte de contenu : elle ne fixe d'ailleurs aucun
+   font-size explicite sur h1, qui retombait donc sur la taille par défaut du
+   navigateur (~2em) — démesurée dans une zone de texte aussi compacte. Même
+   spécificité que la règle générique (2 classes + élément) mais positionnée après
+   dans le fichier, donc prioritaire. `display:block` (au lieu du `flex` hérité,
+   pensé pour aligner un titre de section et son icône) pour un rendu de titre de
+   texte normal. */
+.omens13 .editor-content h1,
+.omens13 .editor-content h2,
+.omens13 .editor-content h3,
+.omens13 .editor-content h4,
+.omens13 .editor-content h5,
+.omens13 .editor-content h6 {
+  display: block;
+  font-family: "Epilogue", sans-serif;
+  color: var(--o13-primary-light);
+  text-transform: none;
+  letter-spacing: normal;
+  border: none;
+  margin: 0.5em 0 0.25em;
+}
+
+.omens13 .editor-content h1 {
+  font-size: 1.4em;
+  font-weight: 700;
+}
+
+.omens13 .editor-content h2 {
+  font-size: 1.2em;
+  font-weight: 700;
+  padding-bottom: 0;
+}
+
+.omens13 .editor-content h3 {
+  font-size: 1.05em;
+  font-weight: 600;
+}
+
+.omens13 .editor-content h4,
+.omens13 .editor-content h5,
+.omens13 .editor-content h6 {
+  font-size: 1em;
+  font-weight: 600;
+}
+
+.omens13-editor-save {
+  align-self: flex-end;
+  margin: 4px;
+  background: var(--o13-primary);
+  border-color: var(--o13-primary-light);
+}
+
+/* -------------------------------------------- */
+/*  Dice Bag — panneau flottant                  */
+/* -------------------------------------------- */
+
+/* Même correctif que .character-sheet (14e itération) : dice-bag.hbs déclare
+   aussi `scrollable: [""]`, qui ne suffit pas seul à activer un scroll — voir
+   le commentaire détaillé sur .character-sheet plus haut. Corrigé ici en
+   prévention avant même un retour de bug (même cause exacte). */
+.omens13.dice-bag-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6em;
+  padding: 0.5em;
+  height: 100%;
+  box-sizing: border-box;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background-image:
+    linear-gradient(rgba(12, 10, 10, 0.92), rgba(12, 10, 10, 0.92)),
+    url("../assets/textures/sheet-paper.png");
+  background-size: cover;
+  background-position: top center;
+  background-repeat: no-repeat;
+}
+
+.omens13.dice-bag-panel .logo-banner img {
+  max-width: 180px;
+}
+
+.omens13.dice-bag-panel section {
+  background: var(--o13-surface);
+  border: 1px solid var(--o13-border);
+  border-radius: 6px;
+  padding: 0.5em;
+}
+
+.omens13.dice-bag-panel .not-ready {
+  text-align: center;
+  padding: 1em;
+  color: var(--o13-text-muted);
+  font-style: italic;
+}
+
+.omens13 .act-buttons {
+  display: flex;
+  gap: 0.4em;
+}
+
+.omens13 .act-button {
+  flex: 1;
+  font-family: "JetBrains Mono", monospace;
+}
+
+.omens13 .act-button.active {
+  background: var(--o13-primary);
+  border-color: var(--o13-primary-light);
+  font-weight: 700;
+}
+
+.omens13 .hint {
+  font-size: 0.8em;
+  color: var(--o13-text-muted);
+  font-style: italic;
+  margin: 0.3em 0 0;
+}
+
+.omens13 .pip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 0.3em 0;
+}
+
+.omens13 .pip {
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+  border: 1px solid var(--o13-border);
+}
+
+.omens13 .pip.safe.filled {
+  background: var(--o13-safe-die);
+  border-color: var(--o13-safe-die);
+}
+
+.omens13 .pip.omen.filled {
+  background: var(--o13-omen-die);
+  border-color: var(--o13-primary-light);
+  box-shadow: 0 0 4px var(--o13-omen-die);
+}
+
+.omens13 .pip.empty {
+  background: transparent;
+}
+
+.omens13 .pip.wound {
+  border-radius: 50%;
+}
+
+.omens13 .pip.wound.filled {
+  background: var(--o13-danger);
+  border-color: var(--o13-danger);
+}
+
+/* 29e itération : la boîte "DICE BAG" fusionne Safe Dice + Omen Dice EN JEU dans
+   le sac (les pastilles blanches ET rouges se lisent dans la même rangée) pour
+   visualiser d'un coup d'œil le ratio réel au tirage — voir dice-bag-app.mjs
+   pour le calcul de `omenInBagPips` (longueur dynamique, pas de pastille vide,
+   contrairement à `safePips` qui garde son plancher fixe de 8). */
+.omens13 .dice-bag-box .pip-row {
+  flex-wrap: wrap;
+}
+
+.omens13 .omen-controls {
+  display: flex;
+  gap: 0.5em;
+  margin-top: 0.4em;
+}
+
+/* 29e itération : le filet de séparation entre personnages passe du `.character-row`
+   au `.character-entry` qui l'englobe désormais (lui + la 2e ligne de dés optionnelle
+   `.character-dice-row`), pour que le filet apparaisse après les DEUX lignes plutôt
+   qu'entre elles. */
+.omens13 .character-entry {
+  border-bottom: 1px solid rgba(74, 32, 32, 0.4);
+}
+
+.omens13 .character-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  padding: 0.3em 0;
+}
+
+/* Ligne optionnelle sous chaque personnage : un dé Omen (rouge) par Blessure
+   actuelle + un dé Safe (blanc) si un Cheat Death a été utilisé cette histoire.
+   N'existe dans le DOM que si elle a du contenu (voir `character.showDiceRow`
+   dans dice-bag-app.mjs), donc pas besoin de la masquer ici — juste l'aligner
+   sous le nom (largeur du portrait + son écart) plutôt que sous le bord gauche. */
+.omens13 .character-dice-row {
+  padding: 0 0 0.4em calc(32px + 0.5em);
+}
+
+.omens13 .character-dice-row .pip-row {
+  margin: 0;
+}
+
+.omens13 .character-dice-row .pip {
+  width: 12px;
+  height: 12px;
+}
+
+/* 25e itération : la Death Icon quittait la rangée de pips (mal placée, décalée
+   sous la jauge de Blessures) pour devenir un badge posé DIRECTEMENT sur
+   l'avatar du personnage une fois à 4/4 Wounds (`.character-row.dead`) — un
+   vrai wrapper `position:relative` autour du portrait plutôt qu'un
+   positionnement deviné dans le flux de la rangée. */
+.omens13 .character-row .portrait-wrap {
+  position: relative;
+  flex: 0 0 auto;
+  width: 32px;
+  height: 32px;
+}
+
+.omens13 .character-row .avatar {
+  width: 32px;
+  height: 32px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 1px solid var(--o13-border);
+  display: block;
+}
+
+.omens13 .character-row.dead .avatar {
+  filter: grayscale(1);
+  opacity: 0.5;
+}
+
+.omens13 .character-row .death-overlay {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 3px var(--o13-danger));
+  pointer-events: none;
+}
+
+.omens13 .character-row .name {
+  flex: 1;
+  font-family: "Epilogue", sans-serif;
+}
+
+.omens13 .character-row.critical .name {
+  color: var(--o13-danger);
+}
+
+.omens13 .character-row.dead .name {
+  color: var(--o13-text-muted);
+  text-decoration: line-through;
+}
+
+.omens13 .wound-count {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.85em;
+  color: var(--o13-text-muted);
+}
+
+.omens13 .cheat-death {
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border-color: var(--o13-danger);
+}
+
+/* 25e itération : bouton d'annulation d'un Cheat Death déclenché par erreur —
+   même gabarit que .cheat-death mais bordure neutre (pas de rouge "danger",
+   pour ne pas laisser croire qu'annuler est lui-même une action à risque). */
+.omens13 .cheat-death.undo {
+  border-color: var(--o13-border);
+  color: var(--o13-text-muted);
+}
+
+.omens13 .cheat-death.undo:hover {
+  color: var(--o13-text);
+  border-color: var(--o13-text-muted);
+}
+
+.omens13 .wound-adjust {
+  display: flex;
+  gap: 0.2em;
+  flex: 0 0 auto;
+}
+
+.omens13 .wound-adjust button {
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  font-size: 0.8em;
+}
+
+.omens13 .wound-adjust button:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+/* -------------------------------------------- */
+/*  Carte de chat                                */
+/* -------------------------------------------- */
+
+/* Le <li class="chat-message"> qui entoure notre carte est généré par Foundry
+   (thème "themed"/bulle claire par défaut depuis la V13) : sans neutraliser son
+   fond/bordure/ombre, notre carte sombre se retrouvait entourée d'un "contour
+   blanc" Foundry très visible. `markOmensChatMessage()` (omens13.mjs) ajoute la
+   classe `.omens13-chat-message` sur ce <li> via son flag `flags.omens13.checkResult` ;
+   `:has()` est gardé en renfort pour les navigateurs qui le supportent (la quasi-
+   totalité des Foundry récents). */
+.chat-message.omens13-chat-message,
+.chat-message:has(.omens13.chat-card) {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+}
+
+.chat-message.omens13-chat-message .message-header,
+.chat-message:has(.omens13.chat-card) .message-header {
+  padding: 0 0 2px;
+}
+
+.chat-message .omens13.chat-card {
+  position: relative;
+  overflow: hidden;
+  background: var(--o13-bg);
+  border: 1px solid var(--o13-border);
+  border-radius: 6px;
+  padding: 0.6em;
+  color: var(--o13-text);
+}
+
+/* Portrait du personnage qui a lancé le Check, collé au bord droit de la carte
+   et dégradé vers le noir (fond majoritairement noir à gauche où sont le texte
+   et les dés, portrait qui se révèle vers la droite). Deux calques superposés :
+   .portrait-image occupe toute la largeur de la carte et est dimensionnée sur
+   sa HAUTEUR (pas sa largeur), pour montrer le plus possible du portrait plutôt
+   que de le rogner en haut/en bas ; `background-position: right` le colle au
+   bord droit plutôt que de le centrer (centrer révélait parfois un bord gris/
+   du remplissage propre à l'image source plutôt que le personnage lui-même).
+   .portrait-image est maintenant DÉCOUPÉE PAR UN MASQUE DÉGRADÉ (11e itération) :
+   empiler un simple calque de couleur semi-transparent par-dessus une image
+   à opacity fixe laissait toujours voir une ligne de coupe (les deux calques
+   sont "plats" — la photo elle-même ne s'estompe pas, seul le lavis de couleur
+   par-dessus varie). Un `mask-image` fait vraiment disparaître les PIXELS de
+   l'image progressivement de gauche (transparent) à droite (opaque) : c'est la
+   seule façon d'obtenir un fondu réellement continu, sans arête visible.
+   .portrait-fade (dégradé de couleur) est conservé en appoint, plus léger,
+   pour fondre la toute petite marge restante dans le fond de carte. Les
+   arrêts en rgba() sont codés en dur sur --o13-bg (#141212 → 20,18,18) car les
+   custom properties CSS ne supportent pas nativement une alpha partielle sans
+   color-mix(). -webkit-mask-image dupliqué pour Chromium/Electron. */
+.omens13.chat-card .portrait-frame {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.omens13.chat-card .portrait-image {
+  position: absolute;
+  inset: 0;
+  background-size: auto 100%;
+  background-position: right top;
+  background-repeat: no-repeat;
+  opacity: 0.55;
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    transparent 8%,
+    rgba(0, 0, 0, 0.12) 22%,
+    rgba(0, 0, 0, 0.3) 38%,
+    rgba(0, 0, 0, 0.55) 55%,
+    rgba(0, 0, 0, 0.8) 72%,
+    rgba(0, 0, 0, 0.95) 88%,
+    black 100%
+  );
+  mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    transparent 8%,
+    rgba(0, 0, 0, 0.12) 22%,
+    rgba(0, 0, 0, 0.3) 38%,
+    rgba(0, 0, 0, 0.55) 55%,
+    rgba(0, 0, 0, 0.8) 72%,
+    rgba(0, 0, 0, 0.95) 88%,
+    black 100%
+  );
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: 325% 100%;
+  mask-size: 325% 100%;
+}
+
+.omens13.chat-card .portrait-fade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to right,
+    var(--o13-bg) 0%,
+    var(--o13-bg) 6%,
+    rgba(20, 18, 18, 0.55) 18%,
+    rgba(20, 18, 18, 0.3) 32%,
+    rgba(20, 18, 18, 0.15) 50%,
+    rgba(20, 18, 18, 0.05) 70%,
+    transparent 88%
+  );
+}
+
+.omens13.chat-card .card-content {
+  position: relative;
+  z-index: 1;
+}
+
+.omens13.chat-card .check-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  border-bottom: 1px solid var(--o13-border);
+  margin-bottom: 0.3em;
+}
+
+/* Réduit : "Courage"/"Ghost Stormers Lore" prenaient toute la largeur de la carte
+   à la taille par défaut d'un <h3> de navigateur. */
+.omens13.chat-card .check-header h3 {
+  margin: 0;
+  border: none;
+  font-family: "Epilogue", sans-serif;
+  font-size: 1em;
+  font-weight: 700;
+}
+
+.omens13.chat-card .tn {
+  font-family: "JetBrains Mono", monospace;
+  color: var(--o13-primary-light);
+}
+
+.omens13.chat-card .dice-row {
+  display: flex;
+  gap: 4px;
+  margin: 0.4em 0;
+}
+
+.omens13.chat-card .die {
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  font-family: "JetBrains Mono", monospace;
+  font-weight: 700;
+  border: 1px solid var(--o13-border);
+}
+
+.omens13.chat-card .die.die-safe {
+  background: var(--o13-safe-die);
+  color: #111;
+}
+
+.omens13.chat-card .die.die-omen {
+  background: var(--o13-omen-die);
+  color: #fff;
+}
+
+.omens13.chat-card .die.discarded {
+  opacity: 0.4;
+}
+
+.omens13.chat-card .total-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5em;
+}
+
+.omens13.chat-card .total {
+  font-size: 1.4em;
+  font-family: "JetBrains Mono", monospace;
+  font-weight: 700;
+}
+
+.omens13.chat-card.outcome-success .outcome-label {
+  color: #7bd88f;
+}
+
+.omens13.chat-card.outcome-successComplication .outcome-label {
+  color: #e0c15a;
+}
+
+.omens13.chat-card.outcome-failure .outcome-label {
+  color: var(--o13-danger);
+}
+
+.omens13.chat-card .modifiers-row {
+  display: flex;
+  gap: 0.5em;
+  margin-top: 0.3em;
+  font-size: 0.8em;
+}
+
+.omens13.chat-card .mod {
+  padding: 1px 6px;
+  border-radius: 3px;
+  border: 1px solid var(--o13-border);
+}
+
+.omens13.chat-card .wound-banner {
+  margin-top: 0.4em;
+  color: var(--o13-danger);
+  font-family: "Epilogue", sans-serif;
+  font-weight: 700;
+}
+
+.omens13.chat-card .strain-banner {
+  margin-top: 0.4em;
+  color: var(--o13-text-muted);
+  font-style: italic;
+}
+
+/* Bouton "Cheat Death" directement sur la roll card (41e itération) — voir
+   performCheck()/cheatDeathEligible (bourse-engine.mjs) et
+   activateCheckCardCheatDeath() (omens13.mjs). Même gabarit "danger" que
+   .cheat-death du Dice Bag ; état grisé au même modèle que .wound-adjust
+   button:disabled. */
+.omens13.chat-card .cheat-death-offer {
+  margin-top: 0.5em;
+}
+
+.omens13.chat-card .cheat-death-card-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  padding: 3px 10px;
+  font-size: 0.85em;
+  border-color: var(--o13-danger);
+  color: var(--o13-danger);
+}
+
+.omens13.chat-card .cheat-death-card-btn:hover:not(:disabled) {
+  background: var(--o13-danger);
+  border-color: var(--o13-danger);
+  color: var(--o13-text);
+}
+
+.omens13.chat-card .cheat-death-card-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  color: var(--o13-text-muted);
+  border-color: var(--o13-border);
+}
+
+/* Carte de chat "Perk" (21e itération, voir #onSendPerkToChat). Depuis la 34e
+   itération (retour utilisateur), réutilise le même portrait/dégradé en
+   filigrane que check-result (voir .portrait-frame/.portrait-image/
+   .portrait-fade plus haut, et .card-content pour le z-index) plutôt que
+   d'afficher l'icône propre du Perk — un Perk n'a en général pas d'icône
+   pertinente, alors que le personnage propriétaire, lui, en a toujours une. */
+.omens13.chat-card .perk-card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  border-bottom: 1px solid var(--o13-border);
+  margin-bottom: 0.4em;
+  padding-bottom: 0.3em;
+}
+
+.omens13.chat-card .perk-card-header h3 {
+  margin: 0;
+  border: none;
+  font-family: "Epilogue", sans-serif;
+  font-size: 1em;
+  font-weight: 700;
+}
+
+.omens13.chat-card .perk-card-description {
+  font-family: "Epilogue", sans-serif;
+  font-size: 0.9em;
+  line-height: 1.4;
+}
+
+.omens13.chat-card .perk-card-description p:first-child {
+  margin-top: 0;
+}
+
+.omens13.chat-card .perk-card-description p:last-child {
+  margin-bottom: 0;
+}
+
+.omens13.chat-card .perk-card-empty {
+  font-style: italic;
+  color: var(--o13-text-muted);
+  margin: 0;
+}
+
+/* Carte de chat "Cheat Death" (34e itération, retour utilisateur) : jusqu'ici
+   cette action ne produisait aucun message de chat. Même portrait en filigrane
+   que check-result/perk-card ; un seul bandeau de texte, pas de mise en page
+   riche nécessaire. */
+.omens13.chat-card .cheat-death-banner {
+  color: var(--o13-danger);
+  font-family: "Epilogue", sans-serif;
+  font-weight: 700;
+}
+
+/* -------------------------------------------- */
+/*  Bouton flottant "Dice Bag" (accès garanti)   */
+/* -------------------------------------------- */
+
+/* Pas de right/bottom fixes ici : la position est posée en JS (omens13.mjs,
+   createDiceBagFab) depuis le réglage client `diceBagFabPosition`, et modifiable
+   par glisser-déposer — deviner une position en pixels universelle n'a pas de
+   sens (écrans ultra-wide, sidebar redimensionnée...), donc chaque utilisateur
+   place le bouton une fois où ça l'arrange. */
+#omens13-dice-bag-fab {
+  position: fixed;
+  z-index: 100;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3em;
+  background: linear-gradient(160deg, #880000, #4a0000);
+  border: 1px solid #c94f4f;
+  color: #ededed;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.6);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+#omens13-dice-bag-fab:hover {
+  transform: scale(1.08);
+  box-shadow: 0 3px 14px rgba(136, 0, 0, 0.7);
+}
+
+#omens13-dice-bag-fab:active {
+  cursor: grabbing;
+  transform: scale(1.04);
+}
+
+/* -------------------------------------------- */
+/*  Overlay "Game Paused" reskinné (35e itération) */
+/* -------------------------------------------- */
+
+/* #pause est une UI coeur de Foundry, pas un élément du système — donc PAS de
+   scope `.omens13` ici (même logique que #omens13-dice-bag-fab plus haut) et
+   couleurs en dur plutôt que var(--o13-danger) (les custom properties du
+   thème ne sont déclarées que sur `.omens13`, absent de cet arbre DOM).
+
+   37e itération (retour utilisateur, avec capture d'écran) : la tentative de
+   la 36e itération de remplacer l'icône en CSS PUR (`content: url(...)` sur
+   `#pause img`) n'a PAS fonctionné en jeu — l'icône ET le texte natifs de
+   Foundry sont réapparus en permanence (pas juste un flash : le remplacement
+   ne s'appliquait plus du tout). Cette technique s'est donc révélée non fiable
+   sur cet élément dans cet environnement (Electron/Chromium), malgré ce que sa
+   description CSS laisse penser en théorie. RETOUR à la manipulation JS de
+   `img.src` (confirmée fonctionnelle dès la 35e itération, seul un flash de
+   quelques frames restait à corriger) — voir patchPauseOverlay() dans
+   omens13.mjs. La classe `.omens13-pause-icon` est donc de nouveau posée par
+   JS (et non plus statique dans ce sélecteur) : seule cette règle (ci-dessous)
+   fournit l'animation, une fois la classe posée par le script. */
+#pause img.omens13-pause-icon {
+  border-radius: 50%;
+  animation: omens13-pause-pulse 2.4s ease-in-out infinite !important;
+}
+
+@keyframes omens13-pause-pulse {
+  0%, 100% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 6px rgba(255, 92, 92, 0.55)) drop-shadow(0 0 2px rgba(255, 92, 92, 0.7));
+  }
+  50% {
+    transform: scale(1.08);
+    filter: drop-shadow(0 0 20px rgba(255, 92, 92, 0.95)) drop-shadow(0 0 8px rgba(255, 92, 92, 0.85));
+  }
+}
+
+#pause figcaption {
+  color: #ff5c5c;
+  font-family: "Epilogue", sans-serif;
+  letter-spacing: 0.04em;
+}

@@ -1,0 +1,20 @@
+<div class="omens13 chat-card perk-card">
+  {{#if actorImg}}
+  <div class="portrait-frame">
+    <div class="portrait-image" style="background-image: url('{{actorImg}}');"></div>
+    <div class="portrait-fade"></div>
+  </div>
+  {{/if}}
+
+  <div class="card-content">
+    <header class="perk-card-header">
+      <h3>{{name}}</h3>
+    </header>
+
+    {{#if description}}
+    <div class="perk-card-description">{{{description}}}</div>
+    {{else}}
+    <p class="perk-card-empty">{{localize "OMENS13.Sheet.PerkNoDescription"}}</p>
+    {{/if}}
+  </div>
+</div>

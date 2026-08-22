@@ -1,0 +1,6 @@
+Ce système Foundry VTT non-officiel pour "13 Omens" est fourni par son auteur sans garantie d'aucune sorte.
+Le code (JavaScript, CSS, HBS, JSON) est fourni tel quel et peut être librement réutilisé, modifié et redistribué par SokK.
+
+"13 Omens" est une propriété de Paizo Inc. Ce système ne contient aucun texte de règle protégé au-delà de ce qui
+est strictement nécessaire à l'implémentation de la mécanique de jeu (constantes numériques, tables de TN, etc.),
+et n'est ni affilié à, ni approuvé par Paizo Inc.

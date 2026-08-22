@@ -1,0 +1,54 @@
+{
+  "id": "omens13",
+  "title": "13 Omens",
+  "description": "Système Foundry VTT non-officiel pour le jeu de rôle narratif 13 Omens (Paizo Inc.), incluant la fiche de personnage et la Bourse partagée (sac de dés Safe/Omen).",
+  "version": "0.1.15",
+  "compatibility": {
+    "minimum": "13",
+    "verified": "14",
+    "maximum": "14"
+  },
+  "authors": [
+    {
+      "name": "SokK"
+    }
+  ],
+  "esmodules": [
+    "module/omens13.mjs"
+  ],
+  "styles": [
+    "styles/omens13.css"
+  ],
+  "languages": [
+    {
+      "lang": "fr",
+      "name": "Français",
+      "path": "lang/fr.json"
+    },
+    {
+      "lang": "en",
+      "name": "English",
+      "path": "lang/en.json"
+    }
+  ],
+  "template": "template.json",
+  "grid": {
+    "distance": 1,
+    "units": "m"
+  },
+  "primaryTokenAttribute": "wounds",
+  "url": "",
+  "manifest": "",
+  "download": "",
+  "license": "LICENSE.txt",
+  "readme": "README.md",
+  "background": "systems/omens13/assets/branding/showcase.png",
+  "media": [
+    {
+      "type": "setup",
+      "url": "systems/omens13/assets/branding/showcase.png",
+      "thumbnail": "systems/omens13/assets/branding/showcase.png",
+      "caption": "13 Omens"
+    }
+  ]
+}

@@ -1,0 +1,129 @@
+{
+  "OMENS13": {
+    "Aspect": {
+      "courage": "Courage",
+      "evade": "Évasion",
+      "fight": "Combat",
+      "luck": "Chance",
+      "perception": "Perception"
+    },
+    "Rating": {
+      "unset": "—",
+      "terrible": "Terrible",
+      "bad": "Mauvais",
+      "average": "Moyen",
+      "good": "Bon",
+      "great": "Excellent"
+    },
+    "Difficulty": {
+      "veryEasy": "Très facile (-2)",
+      "easy": "Facile (-1)",
+      "average": "Normal (+0)",
+      "hard": "Difficile (+1)",
+      "veryHard": "Très difficile (+2)"
+    },
+    "CheckDialog": {
+      "Title": "Check : {aspect}",
+      "Hint": "Aspect {aspect} — TN de base {tn}",
+      "Difficulty": "Difficulté",
+      "Edges": "Edges (0-2)",
+      "Flaws": "Flaws (0-2)",
+      "FacingEvil": "Omen forcé par l'Hôte (Facing Evil)",
+      "Harmless": "Check sans danger (Harmless)",
+      "StrainedHint": "Cet Aspect est Strained : le jet inclut obligatoirement au moins 1 Flaw.",
+      "PermanentFlawHint": "Ce personnage a 3 Blessures ou plus : le jet inclut obligatoirement au moins 1 Flaw (source distincte du Strain d'Aspect).",
+      "Roll": "Tirer les dés",
+      "Cancel": "Annuler"
+    },
+    "Sheet": {
+      "CharacterTitle": "Fiche de personnage — 13 Omens",
+      "Name": "Nom",
+      "Traits": "Traits",
+      "Goal": "Objectif",
+      "Wounds": "Blessures",
+      "WoundsHint": "Nombre de dés Omen actuellement devant ce personnage",
+      "CoreAspects": "Aspects Fondamentaux",
+      "StoryAspects": "Aspects de l'Histoire",
+      "Aspect": "Aspect",
+      "Rating": "Notation",
+      "TN": "TN",
+      "Strain": "Strain",
+      "Check": "Faire un Check",
+      "Perks": "Perks",
+      "PerkName": "Nom du Perk",
+      "NewPerk": "Nouveau Perk",
+      "PerkEffect": "Effet",
+      "PerkSelected": "Actif",
+      "PerkOwnedHint": "Vous possédez ce Perk",
+      "PerkStrainHint": "Perk Strained (repère visuel uniquement, aucun effet mécanique)",
+      "PerkNoDescription": "Aucune description.",
+      "ToggleDescription": "Afficher/masquer la description",
+      "SendToChat": "Envoyer au Chat",
+      "RenamePerk": "Renommer",
+      "Gear": "Équipement",
+      "GearItem": "Objet",
+      "Notes": "Notes",
+      "TabStats": "Stats",
+      "TabNotes": "Notes",
+      "Save": "Sauvegarder",
+      "UnnamedAspect": "Aspect sans nom",
+      "EditStoryAspects": "Éditer",
+      "NoRatingWarning": "Choisissez d'abord une Notation pour cet Aspect."
+    },
+    "StoryAspectsDialog": {
+      "Title": "Aspects de l'Histoire",
+      "Hint": "Définissez les 5 Aspects de l'Histoire pour ce scénario.",
+      "Slot": "Aspect {n}",
+      "Save": "Enregistrer",
+      "Cancel": "Annuler"
+    },
+    "Bourse": {
+      "DefaultName": "Dice Bag",
+      "WaitingForGM": "En attente d'un Hôte connecté pour créer le Dice Bag.",
+      "NotReady": "Le Dice Bag n'a pas encore été créé. Connectez-vous en tant qu'Hôte pour l'initialiser.",
+      "HostOnly": "Seul l'Hôte peut faire cette action.",
+      "NotOwner": "Vous ne pouvez modifier que les Blessures de vos propres personnages.",
+      "HealWound": "Retirer une Blessure",
+      "AddWound": "Ajouter une Blessure",
+      "Act": "Acte de l'histoire",
+      "Prologue": "Prologue",
+      "ActHintProlog": "L'Hôte ajoute toujours 1 dé Omen à la fin du Prologue.",
+      "ActHint1": "1 à 4 dés Omen.",
+      "ActHint2": "5 à 8 dés Omen.",
+      "ActHint3": "9 à 13 dés Omen.",
+      "SafeDice": "Dés Safe",
+      "OmenDice": "Dés Omen",
+      "DiceBagBox": "Sac de dés",
+      "Reserve": "Réserve (Hôte)",
+      "AddToBag": "Ajouter au sac",
+      "RemoveFromBag": "Retirer du sac",
+      "Wounds": "Blessures des personnages",
+      "CheatDeath": "Tricher la mort",
+      "UndoCheatDeath": "Annuler ce Cheat Death",
+      "WoundDieHint": "Dé Omen représentant une Blessure",
+      "CheatDeathDieHint": "Dé Safe sacrifié pour un Cheat Death",
+      "FatalWound": "Blessure fatale — le 4e Omen Die signifie la mort ou le désespoir",
+      "NoCharacters": "Aucun personnage trouvé.",
+      "CheatDeathStoryUsed": "Ce personnage a déjà triché la mort cette histoire.",
+      "CheatDeathActUsed": "Ce personnage a déjà triché la mort cet Acte.",
+      "NoSafeDiceLeft": "Plus aucun dé Safe disponible dans le sac."
+    },
+    "Chat": {
+      "TargetNumber": "TN",
+      "Edges": "Edges",
+      "Flaws": "Flaws",
+      "FacingEvil": "Facing Evil",
+      "WoundApplied": "Blessure infligée !",
+      "StrainSuggested": "Check sans danger : l'Hôte peut assigner une Strain à l'Aspect concerné.",
+      "CheatDeathAnnounce": "{name} triche la mort ! Attention... il y a désormais un dé Safe de moins dans le sac !"
+    },
+    "UI": {
+      "DeathAwaits": "La Mort attend..."
+    },
+    "Outcome": {
+      "success": "Réussite",
+      "successComplication": "Réussite avec complication",
+      "failure": "Échec"
+    }
+  }
+}

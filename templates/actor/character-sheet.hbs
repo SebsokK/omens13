@@ -1,0 +1,154 @@
+<form class="omens13 character-sheet" autocomplete="off">
+
+  <div class="logo-banner">
+    <img src="systems/omens13/assets/branding/logo-wordmark.png" alt="13 Omens" />
+    <nav class="sheet-tabs">
+      <a data-action="switchTab" data-tab="stats" class="{{#if (eq activeTab 'stats')}}active{{/if}}">{{localize "OMENS13.Sheet.TabStats"}}</a>
+      <a data-action="switchTab" data-tab="notes" class="{{#if (eq activeTab 'notes')}}active{{/if}}">{{localize "OMENS13.Sheet.TabNotes"}}</a>
+    </nav>
+  </div>
+
+  <header class="sheet-header">
+    <img class="portrait" src="{{actor.img}}" data-action="editImage" data-edit="img" alt="{{actor.name}}" />
+    <div class="header-fields">
+      <div class="name-traits-row">
+        <div class="name-traits-col">
+          <input type="text" value="{{actor.name}}" data-scope="field" data-field="name" placeholder="{{localize 'OMENS13.Sheet.Name'}}" class="name-input" />
+          <input type="text" value="{{system.traits}}" data-scope="field" data-field="system.traits" placeholder="{{localize 'OMENS13.Sheet.Traits'}}" class="traits-input" />
+        </div>
+        <div class="wounds-summary" title="{{localize 'OMENS13.Sheet.WoundsHint'}}">
+          <img class="death-icon" src="systems/omens13/assets/branding/death-icon.png" alt="" />
+          <span class="label">{{localize "OMENS13.Sheet.Wounds"}}</span>
+          <span class="value {{#if system.wounds.hasPermanentFlaw}}danger{{/if}}">{{system.wounds.value}} / {{system.wounds.deathThreshold}}</span>
+        </div>
+      </div>
+      <div class="goal-field">
+        <span class="goal-label">{{localize "OMENS13.Sheet.Goal"}}</span>
+        {{editor enriched.goal target="system.goal" button=true engine="prosemirror" collaborate=false editable=editable}}
+      </div>
+    </div>
+  </header>
+
+  <div class="tab-panel {{#if (eq activeTab 'stats')}}active{{/if}}" data-tab-panel="stats">
+
+    <section class="aspects two-columns">
+      <div class="aspect-block core">
+        <h2>
+          {{localize "OMENS13.Sheet.CoreAspects"}}
+          <button type="button" class="edit-button spacer" tabindex="-1" aria-hidden="true"><i class="fa-solid fa-pen"></i></button>
+        </h2>
+        <table class="aspect-table">
+          <thead>
+            <tr>
+              <th class="col-label">{{localize "OMENS13.Sheet.Aspect"}}</th>
+              <th class="col-rating">{{localize "OMENS13.Sheet.Rating"}}</th>
+              <th class="col-tn">{{localize "OMENS13.Sheet.TN"}}</th>
+              <th class="col-strain">{{localize "OMENS13.Sheet.Strain"}}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {{#each coreAspects as |aspect|}}
+            <tr class="aspect-row {{#if aspect.tn}}rollable{{/if}} {{#if aspect.strain}}strained{{/if}}" data-group="{{aspect.group}}" data-key="{{aspect.key}}" title="{{localize 'OMENS13.Sheet.Check'}}">
+              <td class="col-label">{{aspect.label}}</td>
+              <td class="col-rating">
+                <select data-scope="aspect" data-group="{{aspect.group}}" data-key="{{aspect.key}}" data-field="rating">
+                  {{#each ../ratings as |r|}}
+                  <option value="{{r.value}}" {{#if (eq r.value aspect.rating)}}selected{{/if}}>{{r.label}}</option>
+                  {{/each}}
+                </select>
+              </td>
+              <td class="col-tn">{{#if aspect.tn}}{{aspect.tn}}{{else}}—{{/if}}</td>
+              <td class="col-strain"><input type="checkbox" class="aspect-strain-toggle" data-scope="aspect" data-group="{{aspect.group}}" data-key="{{aspect.key}}" data-field="strain" {{#if aspect.strain}}checked{{/if}} /></td>
+            </tr>
+            {{/each}}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="aspect-block story">
+        <h2>
+          {{localize "OMENS13.Sheet.StoryAspects"}}
+          <button type="button" class="edit-button" data-action="editStoryAspects" title="{{localize 'OMENS13.Sheet.EditStoryAspects'}}"><i class="fa-solid fa-pen"></i></button>
+        </h2>
+        <table class="aspect-table">
+          <thead>
+            <tr>
+              <th class="col-label">{{localize "OMENS13.Sheet.Aspect"}}</th>
+              <th class="col-rating">{{localize "OMENS13.Sheet.Rating"}}</th>
+              <th class="col-tn">{{localize "OMENS13.Sheet.TN"}}</th>
+              <th class="col-strain">{{localize "OMENS13.Sheet.Strain"}}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {{#each storyAspects as |aspect|}}
+            <tr class="aspect-row {{#if aspect.tn}}rollable{{/if}} {{#if aspect.strain}}strained{{/if}}" data-group="{{aspect.group}}" data-key="{{aspect.key}}" title="{{localize 'OMENS13.Sheet.Check'}}">
+              <td class="col-label">
+                {{#if aspect.label}}{{aspect.label}}{{else}}<span class="empty-hint">{{localize "OMENS13.Sheet.UnnamedAspect"}}</span>{{/if}}
+              </td>
+              <td class="col-rating">
+                <select data-scope="aspect" data-group="{{aspect.group}}" data-key="{{aspect.key}}" data-field="rating">
+                  {{#each ../ratings as |r|}}
+                  <option value="{{r.value}}" {{#if (eq r.value aspect.rating)}}selected{{/if}}>{{r.label}}</option>
+                  {{/each}}
+                </select>
+              </td>
+              <td class="col-tn">{{#if aspect.tn}}{{aspect.tn}}{{else}}—{{/if}}</td>
+              <td class="col-strain"><input type="checkbox" class="aspect-strain-toggle" data-scope="aspect" data-group="{{aspect.group}}" data-key="{{aspect.key}}" data-field="strain" {{#if aspect.strain}}checked{{/if}} /></td>
+            </tr>
+            {{/each}}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="perks">
+      <h2>
+        {{localize "OMENS13.Sheet.Perks"}}
+        <button type="button" class="add-button" data-action="addPerk"><i class="fa-solid fa-plus"></i></button>
+      </h2>
+      <div class="perk-list">
+        {{#each perks as |perk|}}
+        <div class="perk-item {{#if perk.expanded}}expanded{{/if}} {{#if perk.strain}}strained{{/if}}" data-item-id="{{perk.id}}">
+          <div class="perk-header">
+            <input type="checkbox" class="perk-owned" data-scope="item" data-item-id="{{perk.id}}" data-field="system.selected" title="{{localize 'OMENS13.Sheet.PerkOwnedHint'}}" {{#if perk.selected}}checked{{/if}} />
+            <span class="perk-title" data-action="sendPerkToChat" title="{{localize 'OMENS13.Sheet.SendToChat'}}">{{perk.name}}</span>
+            <input type="text" data-scope="item" data-item-id="{{perk.id}}" data-field="name" value="{{perk.name}}" placeholder="{{localize 'OMENS13.Sheet.PerkName'}}" class="perk-name-input" />
+            <input type="checkbox" class="perk-strain-toggle" data-scope="item" data-item-id="{{perk.id}}" data-field="system.strain" title="{{localize 'OMENS13.Sheet.PerkStrainHint'}}" {{#if perk.strain}}checked{{/if}} />
+            <button type="button" class="edit-button rename-button" data-action="renamePerk" title="{{localize 'OMENS13.Sheet.RenamePerk'}}"><i class="fa-solid fa-pen"></i></button>
+            <button type="button" class="delete-button" data-action="deletePerk"><i class="fa-solid fa-trash"></i></button>
+            <button type="button" class="perk-toggle" data-action="togglePerk" title="{{localize 'OMENS13.Sheet.ToggleDescription'}}">
+              <i class="fa-solid fa-chevron-down"></i>
+            </button>
+          </div>
+          <div class="perk-body">
+            {{editor perk.enrichedDescription target="system.description" button=true engine="prosemirror" collaborate=false editable=../editable}}
+          </div>
+        </div>
+        {{/each}}
+      </div>
+    </section>
+
+    <section class="gear">
+      <h2>
+        {{localize "OMENS13.Sheet.Gear"}}
+        <button type="button" class="add-button" data-action="addGear"><i class="fa-solid fa-plus"></i></button>
+      </h2>
+      <div class="gear-list">
+        {{#each system.gear as |item index|}}
+        <div class="gear-row">
+          <input type="text" data-scope="list" data-list="gear" data-field="value" data-index="{{index}}" value="{{item}}" placeholder="{{localize 'OMENS13.Sheet.GearItem'}}" />
+          <button type="button" class="delete-button" data-action="deleteGear" data-index="{{index}}"><i class="fa-solid fa-trash"></i></button>
+        </div>
+        {{/each}}
+      </div>
+    </section>
+
+  </div>
+
+  <div class="tab-panel {{#if (eq activeTab 'notes')}}active{{/if}}" data-tab-panel="notes">
+    <section class="notes">
+      {{editor enriched.notes target="system.notes" button=true engine="prosemirror" collaborate=false editable=editable}}
+    </section>
+  </div>
+
+</form>

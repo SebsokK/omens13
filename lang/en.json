@@ -1,0 +1,129 @@
+{
+  "OMENS13": {
+    "Aspect": {
+      "courage": "Courage",
+      "evade": "Evade",
+      "fight": "Fight",
+      "luck": "Luck",
+      "perception": "Perception"
+    },
+    "Rating": {
+      "unset": "—",
+      "terrible": "Terrible",
+      "bad": "Bad",
+      "average": "Average",
+      "good": "Good",
+      "great": "Great"
+    },
+    "Difficulty": {
+      "veryEasy": "Very Easy (-2)",
+      "easy": "Easy (-1)",
+      "average": "Average (+0)",
+      "hard": "Hard (+1)",
+      "veryHard": "Very Hard (+2)"
+    },
+    "CheckDialog": {
+      "Title": "Check: {aspect}",
+      "Hint": "{aspect} Aspect — base TN {tn}",
+      "Difficulty": "Difficulty",
+      "Edges": "Edges (0-2)",
+      "Flaws": "Flaws (0-2)",
+      "FacingEvil": "Host-forced Omen (Facing Evil)",
+      "Harmless": "Harmless Check",
+      "StrainedHint": "This Aspect is Strained: the Check includes at least 1 Flaw.",
+      "PermanentFlawHint": "This character has 3 or more Wounds: the Check includes at least 1 Flaw (a source distinct from Aspect Strain).",
+      "Roll": "Draw dice",
+      "Cancel": "Cancel"
+    },
+    "Sheet": {
+      "CharacterTitle": "Character Sheet — 13 Omens",
+      "Name": "Name",
+      "Traits": "Traits",
+      "Goal": "Goal",
+      "Wounds": "Wounds",
+      "WoundsHint": "Number of Omen Dice currently in front of this character",
+      "CoreAspects": "Core Aspects",
+      "StoryAspects": "Story Aspects",
+      "Aspect": "Aspect",
+      "Rating": "Rating",
+      "TN": "TN",
+      "Strain": "Strain",
+      "Check": "Make a Check",
+      "Perks": "Perks",
+      "PerkName": "Perk Name",
+      "NewPerk": "New Perk",
+      "PerkEffect": "Effect",
+      "PerkSelected": "Active",
+      "PerkOwnedHint": "You possess this Perk",
+      "PerkStrainHint": "Strained Perk (visual only, no mechanical effect)",
+      "PerkNoDescription": "No description.",
+      "ToggleDescription": "Show/hide description",
+      "SendToChat": "Send to Chat",
+      "RenamePerk": "Rename",
+      "Gear": "Gear",
+      "GearItem": "Item",
+      "Notes": "Notes",
+      "TabStats": "Stats",
+      "TabNotes": "Notes",
+      "Save": "Save",
+      "UnnamedAspect": "Unnamed Aspect",
+      "EditStoryAspects": "Edit",
+      "NoRatingWarning": "Choose a Rating for this Aspect first."
+    },
+    "StoryAspectsDialog": {
+      "Title": "Story Aspects",
+      "Hint": "Set the 5 Story Aspects for this scenario.",
+      "Slot": "Aspect {n}",
+      "Save": "Save",
+      "Cancel": "Cancel"
+    },
+    "Bourse": {
+      "DefaultName": "Dice Bag",
+      "WaitingForGM": "Waiting for a connected Host to create the Dice Bag.",
+      "NotReady": "The Dice Bag hasn't been created yet. Log in as the Host to initialize it.",
+      "HostOnly": "Only the Host can do this.",
+      "NotOwner": "You can only adjust Wounds for your own characters.",
+      "HealWound": "Remove a Wound",
+      "AddWound": "Add a Wound",
+      "Act": "Story Act",
+      "Prologue": "Prologue",
+      "ActHintProlog": "The Host always adds 1 Omen Die at the end of the Prologue.",
+      "ActHint1": "1 to 4 Omen Dice.",
+      "ActHint2": "5 to 8 Omen Dice.",
+      "ActHint3": "9 to 13 Omen Dice.",
+      "SafeDice": "Safe Dice",
+      "OmenDice": "Omen Dice",
+      "DiceBagBox": "Dice Bag",
+      "Reserve": "Reserve (Host)",
+      "AddToBag": "Add to bag",
+      "RemoveFromBag": "Remove from bag",
+      "Wounds": "Character Wounds",
+      "CheatDeath": "Cheat Death",
+      "UndoCheatDeath": "Undo this Cheat Death",
+      "WoundDieHint": "Omen Die representing a Wound",
+      "CheatDeathDieHint": "Safe Die spent on a Cheat Death",
+      "FatalWound": "Fatal Wound — the 4th Omen Die means death or despair",
+      "NoCharacters": "No characters found.",
+      "CheatDeathStoryUsed": "This character already cheated death this story.",
+      "CheatDeathActUsed": "This character already cheated death this Act.",
+      "NoSafeDiceLeft": "No Safe Dice left in the bag."
+    },
+    "Chat": {
+      "TargetNumber": "TN",
+      "Edges": "Edges",
+      "Flaws": "Flaws",
+      "FacingEvil": "Facing Evil",
+      "WoundApplied": "Wound taken!",
+      "StrainSuggested": "Harmless Check: the Host may assign a Strain to the relevant Aspect.",
+      "CheatDeathAnnounce": "{name} cheats Death! Be careful... there is one less Safe Die in the bag now!"
+    },
+    "UI": {
+      "DeathAwaits": "Death Awaits..."
+    },
+    "Outcome": {
+      "success": "Success",
+      "successComplication": "Success with complication",
+      "failure": "Failure"
+    }
+  }
+}

@@ -1,0 +1,52 @@
+<div class="omens13 chat-card check-result outcome-{{outcome}}">
+  {{#if actor.img}}
+  <div class="portrait-frame">
+    <div class="portrait-image" style="background-image: url('{{actor.img}}');"></div>
+    <div class="portrait-fade"></div>
+  </div>
+  {{/if}}
+
+  <div class="card-content">
+    <header class="check-header">
+      <h3>{{aspectLabel}}</h3>
+      <span class="tn">{{localize "OMENS13.Chat.TargetNumber"}} {{effectiveTn}}
+        {{#if difficultyMod}}<small>({{baseTn}} {{#if (gt difficultyMod 0)}}+{{else}}{{/if}}{{difficultyMod}})</small>{{/if}}
+      </span>
+    </header>
+
+    <div class="dice-row">
+      {{#each diceDisplay as |die|}}
+        <span class="die die-{{die.type}} {{#if die.used}}used{{else}}discarded{{/if}}" title="{{die.type}} ({{die.source}})">
+          {{die.value}}
+        </span>
+      {{/each}}
+    </div>
+
+    <div class="total-row">
+      <span class="total">{{total}}</span>
+      <span class="outcome-label">{{localize (concat "OMENS13.Outcome." outcome)}}</span>
+    </div>
+
+    {{#if (or edges flaws facingEvilOmen)}}
+      <div class="modifiers-row">
+        {{#if edges}}<span class="mod edge">{{localize "OMENS13.Chat.Edges"}} {{edges}}</span>{{/if}}
+        {{#if flaws}}<span class="mod flaw">{{localize "OMENS13.Chat.Flaws"}} {{flaws}}</span>{{/if}}
+        {{#if facingEvilOmen}}<span class="mod facing-evil">{{localize "OMENS13.Chat.FacingEvil"}} {{facingEvilOmen}}</span>{{/if}}
+      </div>
+    {{/if}}
+
+    {{#if woundApplied}}
+      <div class="wound-banner">☠ {{localize "OMENS13.Chat.WoundApplied"}}</div>
+    {{/if}}
+    {{#if cheatDeathEligible}}
+      <div class="cheat-death-offer">
+        <button type="button" class="cheat-death-card-btn" data-action="cheatDeathFromCard" data-actor-id="{{actor.id}}">
+          <i class="fa-solid fa-skull"></i> {{localize "OMENS13.Bourse.CheatDeath"}}
+        </button>
+      </div>
+    {{/if}}
+    {{#if strainFromHarmless}}
+      <div class="strain-banner">{{localize "OMENS13.Chat.StrainSuggested"}}</div>
+    {{/if}}
+  </div>
+</div>

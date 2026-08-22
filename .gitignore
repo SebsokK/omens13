@@ -1,0 +1,13 @@
+# OS / éditeur
+.DS_Store
+Thumbs.db
+*.swp
+*~
+.vscode/
+.idea/
+
+# Dépendances (si un jour un outillage npm est ajouté au projet)
+node_modules/
+
+# Archives de livraison (générées, pas versionnées)
+*.zip

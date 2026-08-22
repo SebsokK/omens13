@@ -1,0 +1,118 @@
+<div class="omens13 dice-bag-panel">
+
+  <div class="logo-banner">
+    <img src="systems/omens13/assets/branding/logo-compact.png" alt="13 Omens" />
+  </div>
+
+  {{#if notReady}}
+  <p class="not-ready">{{localize "OMENS13.Bourse.NotReady"}}</p>
+  {{else}}
+
+  <section class="act-tracker">
+    <h2>{{localize "OMENS13.Bourse.Act"}}</h2>
+    <div class="act-buttons">
+      {{#each acts as |act|}}
+      <button type="button" class="act-button {{#if (eq act ../system.currentAct)}}active{{/if}}" data-action="setAct" data-act="{{act}}" {{#unless ../isGM}}disabled{{/unless}}>
+        {{#if act}}{{act}}{{else}}{{localize "OMENS13.Bourse.Prologue"}}{{/if}}
+      </button>
+      {{/each}}
+    </div>
+    <p class="hint">
+      {{#if (eq system.currentAct 0)}}{{localize "OMENS13.Bourse.ActHintProlog"}}
+      {{else if (eq system.currentAct 1)}}{{localize "OMENS13.Bourse.ActHint1"}}
+      {{else if (eq system.currentAct 2)}}{{localize "OMENS13.Bourse.ActHint2"}}
+      {{else if (eq system.currentAct 3)}}{{localize "OMENS13.Bourse.ActHint3"}}
+      {{/if}}
+    </p>
+  </section>
+
+  <section class="dice-bag-box">
+    <h2>{{localize "OMENS13.Bourse.DiceBagBox"}}</h2>
+    <div class="pip-row">
+      {{#each safePips}}
+      <span class="pip safe filled"></span>
+      {{/each}}
+      {{#each omenInBagPips}}
+      <span class="pip omen filled"></span>
+      {{/each}}
+    </div>
+  </section>
+
+  <section class="omen-reserve">
+    <h2>{{localize "OMENS13.Bourse.Reserve"}} <span class="count">{{reserve}} / {{totalOmenDice}}</span></h2>
+    <div class="pip-row">
+      {{#each omenReservePips as |filled|}}
+      <span class="pip omen reserve {{#if filled}}filled{{else}}empty{{/if}}"></span>
+      {{/each}}
+    </div>
+
+    {{#if isGM}}
+    <div class="omen-controls">
+      <button type="button" data-action="addOmen"><i class="fa-solid fa-plus"></i> {{localize "OMENS13.Bourse.AddToBag"}}</button>
+      <button type="button" data-action="removeOmen"><i class="fa-solid fa-minus"></i> {{localize "OMENS13.Bourse.RemoveFromBag"}}</button>
+    </div>
+    {{/if}}
+  </section>
+
+  <section class="wounds-tracker">
+    <h2>{{localize "OMENS13.Bourse.Wounds"}}</h2>
+    <div class="character-list">
+      {{#each characters as |character|}}
+      <div class="character-entry">
+        <div class="character-row {{#if character.isDead}}dead{{else if character.hasPermanentFlaw}}critical{{/if}}">
+          <div class="portrait-wrap">
+            <img class="avatar" src="{{character.img}}" alt="{{character.name}}" />
+            {{#if character.isDead}}
+            <img class="death-overlay" src="systems/omens13/assets/branding/death-icon.png" alt="{{localize 'OMENS13.Bourse.FatalWound'}}" title="{{localize 'OMENS13.Bourse.FatalWound'}}" />
+            {{/if}}
+          </div>
+          <span class="name">{{character.name}}</span>
+          <div class="wound-pips">
+            {{#each character.woundPips as |pip|}}
+            <span class="pip wound {{#if pip.filled}}filled{{/if}}"></span>
+            {{/each}}
+          </div>
+          <span class="wound-count">{{character.wounds}} / {{character.deathThreshold}}</span>
+          {{#if character.canEditWounds}}
+          <div class="wound-adjust">
+            <button type="button" class="wound-minus" data-action="adjustWound" data-actor-id="{{character.id}}" data-delta="-1" title="{{localize 'OMENS13.Bourse.HealWound'}}" {{#unless character.wounds}}disabled{{/unless}}>
+              <i class="fa-solid fa-minus"></i>
+            </button>
+            <button type="button" class="wound-plus" data-action="adjustWound" data-actor-id="{{character.id}}" data-delta="1" title="{{localize 'OMENS13.Bourse.AddWound'}}" {{#if character.isDead}}disabled{{/if}}>
+              <i class="fa-solid fa-plus"></i>
+            </button>
+          </div>
+          {{/if}}
+          {{#if character.canCheatDeath}}
+          <button type="button" class="cheat-death" data-action="cheatDeath" data-actor-id="{{character.id}}" title="{{localize 'OMENS13.Bourse.CheatDeath'}}">
+            <i class="fa-solid fa-skull"></i>
+          </button>
+          {{else if character.canUndoCheatDeath}}
+          <button type="button" class="cheat-death undo" data-action="undoCheatDeath" data-actor-id="{{character.id}}" title="{{localize 'OMENS13.Bourse.UndoCheatDeath'}}">
+            <i class="fa-solid fa-rotate-left"></i>
+          </button>
+          {{/if}}
+        </div>
+        {{#if character.showDiceRow}}
+        <div class="character-dice-row">
+          <div class="pip-row">
+            {{#each character.woundDicePips}}
+            <span class="pip omen filled" title="{{localize 'OMENS13.Bourse.WoundDieHint'}}"></span>
+            {{/each}}
+            {{#if character.hasCheatedDeath}}
+            <span class="pip safe filled" title="{{localize 'OMENS13.Bourse.CheatDeathDieHint'}}"></span>
+            {{/if}}
+          </div>
+        </div>
+        {{/if}}
+      </div>
+      {{/each}}
+      {{#unless characters.length}}
+      <p class="hint">{{localize "OMENS13.Bourse.NoCharacters"}}</p>
+      {{/unless}}
+    </div>
+  </section>
+
+  {{/if}}
+
+</div>
