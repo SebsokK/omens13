@@ -11,3 +11,6 @@ node_modules/
 
 # Archives de livraison (générées, pas versionnées)
 *.zip
+
+# Documents de référence (PDF sous copyright, jamais versionnés)
+_reference/

@@ -26,14 +26,19 @@
       "Title": "Check : {aspect}",
       "Hint": "Aspect {aspect} — TN de base {tn}",
       "Difficulty": "Difficulté",
-      "Edges": "Edges (0-2)",
-      "Flaws": "Flaws (0-2)",
-      "FacingEvil": "Omen forcé par l'Hôte (Facing Evil)",
-      "Harmless": "Check sans danger (Harmless)",
+      "Edges": "Edges",
+      "Flaws": "Flaws",
+      "FacingEvil": "Omen forcé par l'Hôte",
+      "Harmless": "Check sans danger",
       "StrainedHint": "Cet Aspect est Strained : le jet inclut obligatoirement au moins 1 Flaw.",
       "PermanentFlawHint": "Ce personnage a 3 Blessures ou plus : le jet inclut obligatoirement au moins 1 Flaw (source distincte du Strain d'Aspect).",
       "Roll": "Tirer les dés",
-      "Cancel": "Annuler"
+      "Cancel": "Annuler",
+      "Aspect": "Aspect",
+      "Gear": "Objet utilisé",
+      "NoGear": "— Aucun —",
+      "GearEdge": "+1 Edge",
+      "GearBrokenFlaw": "cassé : +1 Flaw"
     },
     "Sheet": {
       "CharacterTitle": "Fiche de personnage — 13 Omens",
@@ -53,22 +58,35 @@
       "PerkName": "Nom du Perk",
       "NewPerk": "Nouveau Perk",
       "PerkEffect": "Effet",
-      "PerkSelected": "Actif",
+      "PerkSelected": "Possédé",
       "PerkOwnedHint": "Vous possédez ce Perk",
       "PerkStrainHint": "Perk Strained (repère visuel uniquement, aucun effet mécanique)",
       "PerkNoDescription": "Aucune description.",
       "ToggleDescription": "Afficher/masquer la description",
       "SendToChat": "Envoyer au Chat",
-      "RenamePerk": "Renommer",
       "Gear": "Équipement",
-      "GearItem": "Objet",
       "Notes": "Notes",
       "TabStats": "Stats",
       "TabNotes": "Notes",
       "Save": "Sauvegarder",
       "UnnamedAspect": "Aspect sans nom",
       "EditStoryAspects": "Éditer",
-      "NoRatingWarning": "Choisissez d'abord une Notation pour cet Aspect."
+      "NoRatingWarning": "Choisissez d'abord une Notation pour cet Aspect.",
+      "EditPerk": "Modifier le Perk",
+      "DeletePerk": "Supprimer le Perk",
+      "PerkHide": "Masquer ce Perk (non choisi)",
+      "PerkShow": "Réafficher ce Perk",
+      "PerkHidden": "Masqué",
+      "ShowHiddenPerks": "Afficher les Perks masqués",
+      "HideHiddenPerks": "Replier les Perks masqués",
+      "GearAdd": "+ Ajouter un objet",
+      "GearTagHint": "Clic : faire un Check avec cet objet (+1 Edge) · Clic droit : options",
+      "GearBrokenHint": "Cassé ou perdu : l'utiliser donne un Flaw · Clic droit : options",
+      "GearUse": "Faire un Check avec cet objet",
+      "GearRename": "Renommer",
+      "GearBreak": "Cassé / perdu",
+      "GearRepair": "Réparé / retrouvé",
+      "GearDelete": "Supprimer"
     },
     "StoryAspectsDialog": {
       "Title": "Aspects de l'Histoire",
@@ -102,11 +120,22 @@
       "UndoCheatDeath": "Annuler ce Cheat Death",
       "WoundDieHint": "Dé Omen représentant une Blessure",
       "CheatDeathDieHint": "Dé Safe sacrifié pour un Cheat Death",
-      "FatalWound": "Blessure fatale — le 4e Omen Die signifie la mort ou le désespoir",
+      "FatalWound": "Blessure fatale : le dernier dé Omen signifie la mort ou le désespoir",
       "NoCharacters": "Aucun personnage trouvé.",
       "CheatDeathStoryUsed": "Ce personnage a déjà triché la mort cette histoire.",
-      "CheatDeathActUsed": "Ce personnage a déjà triché la mort cet Acte.",
-      "NoSafeDiceLeft": "Plus aucun dé Safe disponible dans le sac."
+      "CheatDeathActUsed": "La table a déjà trompé la mort pendant cet Acte.",
+      "NoSafeDiceLeft": "Plus aucun dé Safe disponible dans le sac.",
+      "NoWoundToCheat": "Ce personnage n'a aucune Blessure à remplacer par un dé Safe.",
+      "OutOfStory": "Ce personnage ne participe plus à l'histoire.",
+      "OutOfStoryLabel": "Hors de l'histoire",
+      "Succumb": "Succomber",
+      "SuccumbConfirm": "{name} succombe à ses blessures ou au désespoir. Tous les dés devant ce personnage retournent dans le sac. Continuer ?",
+      "Resurrect": "Ramener dans l'histoire (remis à neuf)",
+      "NewStory": "Nouvelle histoire",
+      "NewStoryConfirm": "Remettre le sac à zéro (8 dés Safe, aucun Omen, Prologue) et remettre tous les personnages à neuf : plus de Blessures, de Cheat Death ni de Strain. Les Notations, Perks et l'équipement sont conservés. Continuer ?",
+      "ChooseCharacters": "Choisir les personnages",
+      "ChooseCharactersHint": "Cochez les personnages qui jouent cette histoire : seuls eux apparaissent dans le Dice Bag.",
+      "NoParticipantsGM": "Aucun personnage choisi. Utilisez le bouton à droite du titre pour choisir les personnages de l'histoire."
     },
     "Chat": {
       "TargetNumber": "TN",
@@ -114,8 +143,17 @@
       "Flaws": "Flaws",
       "FacingEvil": "Facing Evil",
       "WoundApplied": "Blessure infligée !",
-      "StrainSuggested": "Check sans danger : l'Hôte peut assigner une Strain à l'Aspect concerné.",
-      "CheatDeathAnnounce": "{name} triche la mort ! Attention... il y a désormais un dé Safe de moins dans le sac !"
+      "StrainSuggested": "Check sans danger : pas de Blessure, mais une Strain sur {aspect}.",
+      "CheatDeathAnnounce": "{name} triche la mort ! Attention... il y a désormais un dé Safe de moins dans le sac !",
+      "SuccumbAnnounce": "{name} succombe... Tous ses dés retournent dans le sac.",
+      "Die": {
+        "safe": "Dé Safe",
+        "omen": "Dé Omen"
+      },
+      "DieSource": {
+        "bag": "tiré du sac",
+        "reserve": "ajouté par l'Hôte"
+      }
     },
     "UI": {
       "DeathAwaits": "La Mort attend..."
@@ -124,6 +162,12 @@
       "success": "Réussite",
       "successComplication": "Réussite avec complication",
       "failure": "Échec"
+    },
+    "ActOverlay": {
+      "Act": "Acte",
+      "Subtitle1": "Le mal sommeille… et attend.",
+      "Subtitle2": "Le mal se révèle.",
+      "Subtitle3": "L'heure de l'affrontement."
     }
   }
 }

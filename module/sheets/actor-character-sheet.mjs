@@ -18,10 +18,12 @@ export class Omens13CharacterSheet extends HandlebarsApplicationMixin(ActorSheet
       addPerk: Omens13CharacterSheet.#onAddPerk,
       deletePerk: Omens13CharacterSheet.#onDeletePerk,
       togglePerk: Omens13CharacterSheet.#onTogglePerk,
-      renamePerk: Omens13CharacterSheet.#onRenamePerk,
+      editPerk: Omens13CharacterSheet.#onEditPerk,
+      togglePerkHidden: Omens13CharacterSheet.#onTogglePerkHidden,
+      toggleHiddenPerks: Omens13CharacterSheet.#onToggleHiddenPerks,
       sendPerkToChat: Omens13CharacterSheet.#onSendPerkToChat,
       addGear: Omens13CharacterSheet.#onAddGear,
-      deleteGear: Omens13CharacterSheet.#onDeleteGear,
+      useGear: Omens13CharacterSheet.#onUseGear,
       switchTab: Omens13CharacterSheet.#onSwitchTab,
       editImage: Omens13CharacterSheet.#onEditImage,
       editStoryAspects: Omens13CharacterSheet.#onEditStoryAspects
@@ -42,6 +44,9 @@ export class Omens13CharacterSheet extends HandlebarsApplicationMixin(ActorSheet
    * Perk) referme les accordéons déjà ouverts par l'utilisateur.
    */
   #expandedPerks = new Set();
+
+  /** Les Perks masqués sont-ils affichés dans la liste ? (non par défaut, à chaque ouverture) */
+  #showHiddenPerks = false;
 
   get title() {
     return this.actor.name;
@@ -82,97 +87,144 @@ export class Omens13CharacterSheet extends HandlebarsApplicationMixin(ActorSheet
       tn: RATING_TN[aspect.rating] ?? null
     }));
 
-    context.enriched = {};
-    context.enriched.notes = await foundry.applications.ux.TextEditor.implementation.enrichHTML(
-      this.actor._source.system.notes || "",
-      { async: true, relativeTo: this.actor }
-    );
-    context.enriched.goal = await foundry.applications.ux.TextEditor.implementation.enrichHTML(
-      this.actor._source.system.goal || "",
-      { async: true, relativeTo: this.actor }
-    );
+    const { enrichHTML } = foundry.applications.ux.TextEditor.implementation;
+    context.enriched = {
+      notes: await enrichHTML(system.notes || "", { relativeTo: this.actor }),
+      goal: await enrichHTML(system.goal || "", { relativeTo: this.actor })
+    };
 
-    // Perks : désormais des Items embarqués de type "perk" (20e itération) plutôt
-    // qu'un ArrayField — voir module/data/perk.mjs et migratePerksToItems() dans
-    // omens13.mjs pour la migration automatique de l'ancien format.
-    // 32e itération : les Perks "possédés" (system.selected) remontent en haut de
-    // la liste — tri stable, donc l'ordre relatif au sein de chaque groupe
-    // (possédés / non possédés) reste celui de création.
+    // Perks (Items embarqués) : possédés en haut, masqués en bas — tri stable,
+    // l'ordre de création est conservé dans chaque groupe.
+    const perkRank = item => (item.system.hidden ? 2 : item.system.selected ? 0 : 1);
     const perkItems = this.actor.items
       .filter(i => i.type === "perk")
-      .sort((a, b) => (b.system.selected === true) - (a.system.selected === true));
+      .sort((a, b) => perkRank(a) - perkRank(b));
+    context.gear = system.gear.map((g, index) => ({ ...g, index }));
+
+    context.hiddenPerkCount = perkItems.filter(i => i.system.hidden).length;
+    context.showHiddenPerks = this.#showHiddenPerks;
     context.perks = await Promise.all(
       perkItems.map(async item => ({
         id: item.id,
         name: item.name,
         selected: item.system.selected,
         strain: item.system.strain,
+        hidden: item.system.hidden,
         expanded: this.#expandedPerks.has(item.id),
-        enrichedDescription: await foundry.applications.ux.TextEditor.implementation.enrichHTML(
-          item._source.system.description || "",
-          { async: true, relativeTo: item }
-        )
+        enrichedDescription: await enrichHTML(item.system.description || "", { relativeTo: item })
       }))
     );
 
     return context;
   }
 
+  _onFirstRender(context, options) {
+    super._onFirstRender(context, options);
+    this.#createGearContextMenu();
+  }
+
   _onRender(context, options) {
     super._onRender(context, options);
-    this.#activateProseMirrorEditors();
-    this.#activateManualFields();
+    this.#activatePerkFields();
     this.#activateAspectRowClicks();
-    this.#activatePerkRename();
+    this.#activateGearInput();
   }
 
   /**
-   * Liaison manuelle et explicite des champs de la fiche (Rating/Strain/Label
-   * d'Aspect, Perks, Gear) au lieu de compter sur le binding générique par
-   * attribut `name` d'ApplicationV2. Deux raisons :
-   *  1) Les ArrayField (gear) seraient sérialisés en objet à clés
-   *     numériques par FormDataExtended plutôt qu'en tableau.
-   *  2) Fiabilité : un `actor.update()` explicite avec le chemin exact évite
-   *     toute ambiguïté de sérialisation de chemin imbriqué et garantit que
-   *     le TN (recalculé à chaque rendu depuis la Notation) se met bien à jour
-   *     dès le changement de Rating.
+   * Champ "+ Ajouter un objet" en fin de liste d'équipement : Entrée (ou un
+   * clic ailleurs) ajoute l'objet saisi. Pas de `name` : ignoré par le formulaire.
    */
-  #activateManualFields() {
-    this.element.querySelectorAll("[data-scope]").forEach(el => {
+  #activateGearInput() {
+    const input = this.element.querySelector(".gear-new");
+    if (!input) return;
+    const add = async () => {
+      const name = input.value.trim();
+      if (!name) return;
+      input.value = "";
+      await this.#updateGear(gear => gear.push({ name, broken: false }));
+      this.element.querySelector(".gear-new")?.focus();
+    };
+    input.addEventListener("keydown", event => {
+      if (event.key !== "Enter") return;
+      event.preventDefault();
+      add();
+    });
+    input.addEventListener("change", add);
+  }
+
+  /**
+   * Clic droit sur un objet : Check avec cet objet, renommer, casser/réparer,
+   * supprimer. Créé une seule fois : le menu écoute la fenêtre, qui persiste
+   * d'un rendu à l'autre.
+   */
+  #createGearContextMenu() {
+    const indexOf = target => Number(target.dataset.index);
+    const gearAt = target => this.actor.system.gear[indexOf(target)];
+    new foundry.applications.ux.ContextMenu(this.element, ".gear-tag", [
+      {
+        label: "OMENS13.Sheet.GearUse",
+        icon: "fa-solid fa-dice",
+        onClick: (event, target) => this.#rollCheck({ gearIndex: indexOf(target) })
+      },
+      {
+        label: "OMENS13.Sheet.GearRename",
+        icon: "fa-solid fa-pen",
+        onClick: (event, target) => this.#renameGear(indexOf(target))
+      },
+      {
+        label: "OMENS13.Sheet.GearBreak",
+        icon: "fa-solid fa-heart-crack",
+        visible: target => !gearAt(target)?.broken,
+        onClick: (event, target) => this.#updateGear(gear => { gear[indexOf(target)].broken = true; })
+      },
+      {
+        label: "OMENS13.Sheet.GearRepair",
+        icon: "fa-solid fa-screwdriver-wrench",
+        visible: target => !!gearAt(target)?.broken,
+        onClick: (event, target) => this.#updateGear(gear => { gear[indexOf(target)].broken = false; })
+      },
+      {
+        label: "OMENS13.Sheet.GearDelete",
+        icon: "fa-solid fa-trash",
+        onClick: (event, target) => this.#updateGear(gear => { gear.splice(indexOf(target), 1); })
+      }
+    ], { jQuery: false, fixed: true });
+  }
+
+  /** Copie l'équipement, applique `mutate` et enregistre. */
+  async #updateGear(mutate) {
+    const gear = this.actor.system.gear.map(g => ({ ...g }));
+    mutate(gear);
+    await this.actor.update({ "system.gear": gear });
+  }
+
+  async #renameGear(index) {
+    const current = this.actor.system.gear[index];
+    if (!current) return;
+    const name = await foundry.applications.api.DialogV2.prompt({
+      classes: ["omens13"],
+      window: { title: game.i18n.localize("OMENS13.Sheet.GearRename") },
+      content: `<input type="text" name="name" value="${foundry.utils.escapeHTML(current.name)}" autofocus />`,
+      ok: { callback: (event, button) => button.form.elements.name.value.trim() },
+      rejectClose: false
+    });
+    if (name) await this.#updateGear(gear => { gear[index].name = name; });
+  }
+
+  /**
+   * Les champs de l'Actor portent un attribut `name` et sont sauvegardés par
+   * submitOnChange. Les cases Possédé et Strain des Perks appartiennent à des
+   * Items embarqués : elles n'ont pas de `name` (ignorées par le formulaire de
+   * l'Actor) et mettent à jour leur Item directement.
+   */
+  #activatePerkFields() {
+    this.element.querySelectorAll(".perk-item [data-field]").forEach(el => {
       el.addEventListener("change", async event => {
         const target = event.currentTarget;
-        const scope = target.dataset.scope;
+        const item = this.actor.items.get(target.closest("[data-item-id]")?.dataset.itemId);
+        if (!item) return;
         const value = target.type === "checkbox" ? target.checked : target.value;
-
-        if (scope === "field") {
-          // Champs "simples" de l'en-tête (Nom, Traits...) : convertis au même
-          // binding manuel explicite que le reste de la fiche plutôt que de
-          // compter sur le binding générique par attribut `name` d'ApplicationV2
-          // (submitOnChange), qui s'est révélé peu fiable ici — c'est ce qui
-          // faisait que le Nom et les Traits ne se sauvegardaient pas.
-          const field = target.dataset.field;
-          await this.actor.update({ [field]: value });
-        } else if (scope === "aspect") {
-          const { group, key, field } = target.dataset;
-          await this.actor.update({ [`system.${group}.${key}.${field}`]: value });
-        } else if (scope === "item") {
-          // Perks (20e itération) : Items embarqués, pas un ArrayField. Le champ
-          // ciblé peut être "name" (racine de l'Item) ou "system.selected".
-          const { itemId, field } = target.dataset;
-          const item = this.actor.items.get(itemId);
-          if (!item) return;
-          await item.update({ [field]: value });
-        } else if (scope === "list") {
-          const index = Number(target.dataset.index);
-          const list = target.dataset.list; // "gear"
-          const field = target.dataset.field;
-
-          if (list === "gear") {
-            const gear = [...this.actor.system.gear];
-            gear[index] = value;
-            await this.actor.update({ "system.gear": gear });
-          }
-        }
+        await item.update({ [target.dataset.field]: value });
       });
     });
   }
@@ -196,123 +248,77 @@ export class Omens13CharacterSheet extends HandlebarsApplicationMixin(ActorSheet
     });
   }
 
-  /**
-   * Éditeurs ProseMirror de la fiche (Notes, Goal, et description de chaque
-   * Perk en accordéon), suivant exactement le pattern V14 documenté dans le
-   * guide de référence du projet (bouton manuel + save manuel). Le document
-   * cible est résolu dynamiquement : s'il existe un ancêtre `[data-item-id]`
-   * (cas des descriptions de Perk, chaque bloc `.perk-item` en porte un),
-   * l'éditeur sauvegarde sur cet Item embarqué plutôt que sur l'Actor.
-   */
-  #activateProseMirrorEditors() {
-    this.element.querySelectorAll("a.editor-edit").forEach(btn => {
-      btn.addEventListener("click", async event => {
-        event.preventDefault();
-
-        const editorDiv = btn.closest(".editor");
-        const contentDiv = editorDiv?.querySelector(".editor-content[data-edit]");
-        if (!contentDiv) return;
-
-        const path = contentDiv.dataset.edit;
-        const fieldKey = path.replace("system.", "");
-        const itemId = btn.closest("[data-item-id]")?.dataset.itemId;
-        const doc = itemId ? this.actor.items.get(itemId) : this.actor;
-        if (!doc) return;
-        const src = doc._source?.system?.[fieldKey] ?? "";
-
-        btn.style.display = "none";
-
-        try {
-          await foundry.applications.ux.TextEditor.implementation.create(
-            {
-              target: contentDiv,
-              fieldName: path,
-              document: doc,
-              engine: "prosemirror",
-              collaborate: false,
-              editable: true
-            },
-            src
-          );
-        } catch (err) {
-          console.error("Omens13 | Editor activation failed:", err);
-          btn.style.display = "";
-          return;
-        }
-
-        const saveBtn = document.createElement("button");
-        saveBtn.type = "button";
-        saveBtn.className = "omens13-editor-save";
-        saveBtn.innerHTML = `✓ ${game.i18n.localize("OMENS13.Sheet.Save")}`;
-        editorDiv.appendChild(saveBtn);
-
-        saveBtn.addEventListener("click", async () => {
-          const html = contentDiv.innerHTML ?? "";
-          await doc.update({ [path]: html });
-          this.render();
-        });
-      });
-    });
-  }
-
-  /**
-   * Mode renommage des Perks (bouton crayon, voir #onRenamePerk) : le titre
-   * cliquable (.perk-title, hover rouge -> envoi Chat) cède la place à
-   * l'input texte le temps de la saisie. Enter valide et rend la main, tout
-   * comme le fait de cliquer ailleurs (blur) — sans ce dernier point le champ
-   * resterait affiché indéfiniment après une saisie.
-   */
-  #activatePerkRename() {
-    this.element.querySelectorAll(".perk-name-input").forEach(input => {
-      input.addEventListener("keydown", event => {
-        if (event.key === "Enter") {
-          event.preventDefault();
-          input.blur();
-        }
-      });
-      input.addEventListener("blur", () => {
-        input.closest(".perk-item")?.classList.remove("renaming");
-      });
-    });
-  }
-
   /* -------------------------------------------- */
   /*  Actions                                      */
   /* -------------------------------------------- */
 
-  static async #onRollCheck(event, target) {
-    const group = target.dataset.group; // "core" | "story"
-    const key = target.dataset.key;
-    const aspect = this.actor.system[group][key];
-    const aspectLabel = group === "core"
-      ? game.i18n.localize(`OMENS13.Aspect.${key}`)
-      : (aspect.label || game.i18n.localize("OMENS13.Sheet.UnnamedAspect"));
-    // Recalculé depuis la Notation courante (voir #activateManualFields) plutôt que
-    // de lire aspect.tn, pour être certain de toujours utiliser le TN à jour.
-    const baseTn = RATING_TN[aspect.rating] ?? null;
+  static #onRollCheck(event, target) {
+    return this.#rollCheck({ aspectPath: `${target.dataset.group}.${target.dataset.key}` });
+  }
 
-    if (baseTn == null) {
+  /** Clic sur un objet : Check avec cet objet (l'Aspect se choisit dans la fenêtre). */
+  static #onUseGear(event, target) {
+    return this.#rollCheck({ gearIndex: Number(target.dataset.index) });
+  }
+
+  /**
+   * Prépare et lance un Check, depuis une ligne d'Aspect ou depuis un objet.
+   * La fenêtre permet de choisir l'Aspect et l'objet ; un objet intact ajoute
+   * un Edge, un objet cassé un Flaw (p.10), dans la limite de 2 chacun.
+   */
+  async #rollCheck({ aspectPath = null, gearIndex = null } = {}) {
+    const system = this.actor.system;
+    if (system.outOfStory) {
+      ui.notifications.warn(game.i18n.localize("OMENS13.Bourse.OutOfStory"));
+      return;
+    }
+
+    const aspects = [
+      ...CORE_ASPECT_KEYS.map(key => ({ path: `core.${key}`, aspect: system.core[key], label: game.i18n.localize(`OMENS13.Aspect.${key}`) })),
+      ...Object.entries(system.story).map(([key, aspect]) => ({
+        path: `story.${key}`, aspect, label: aspect.label || game.i18n.localize("OMENS13.Sheet.UnnamedAspect")
+      }))
+    ]
+      .map(({ path, aspect, label }) => ({ path, label, tn: RATING_TN[aspect.rating] ?? null, strained: aspect.strain }))
+      .filter(a => a.tn != null);
+
+    // Depuis une ligne d'Aspect sans Notation, ou si aucun Aspect n'est noté.
+    if (!aspects.length || (aspectPath && !aspects.some(a => a.path === aspectPath))) {
       ui.notifications.warn(game.i18n.localize("OMENS13.Sheet.NoRatingWarning"));
       return;
     }
 
+    const gearItem = system.gear[gearIndex];
+    const title = aspectPath
+      ? game.i18n.format("OMENS13.CheckDialog.Title", { aspect: aspects.find(a => a.path === aspectPath).label })
+      : game.i18n.format("OMENS13.CheckDialog.Title", { aspect: gearItem?.name ?? "" });
+
     const options = await promptCheckOptions({
-      aspectLabel,
-      baseTn,
-      strained: aspect.strain,
-      // 40e itération, audit du livret (p.9) : 3 Blessures ou plus force un
-      // Flaw sur TOUS les Checks, en plus (pas à la place) d'un Strain d'Aspect
-      // éventuel — voir promptCheckOptions() pour le cumul des deux sources.
-      permanentFlaw: this.actor.system.wounds.hasPermanentFlaw
+      aspects,
+      aspectPath: aspectPath ?? aspects[0].path,
+      gear: system.gear,
+      gearIndex,
+      permanentFlaw: system.wounds.hasPermanentFlaw,
+      title
     });
     if (!options) return;
 
+    const aspect = aspects.find(a => a.path === options.aspectPath);
+    const gear = options.gearIndex == null ? null : system.gear[options.gearIndex];
+    const { gearIndex: _, aspectPath: chosenPath, ...checkOptions } = options;
+    if (gear) {
+      if (gear.broken) checkOptions.flaws = Math.min(2, checkOptions.flaws + 1);
+      else checkOptions.edges = Math.min(2, checkOptions.edges + 1);
+    }
+
     const result = await performCheck({
       actor: this.actor,
-      aspectLabel,
-      baseTn,
-      ...options
+      aspectLabel: aspect.label,
+      aspectPath: chosenPath,
+      baseTn: aspect.tn,
+      ...checkOptions
     });
+    if (result && gear) result.gear = { name: gear.name, broken: gear.broken };
 
     await postCheckCard(result);
   }
@@ -333,10 +339,36 @@ export class Omens13CharacterSheet extends HandlebarsApplicationMixin(ActorSheet
   }
 
   static async #onDeletePerk(event, target) {
-    const itemId = target.closest("[data-item-id]")?.dataset.itemId;
-    if (!itemId) return;
-    await this.actor.items.get(itemId)?.delete();
-    this.#expandedPerks.delete(itemId);
+    const item = this.actor.items.get(target.closest("[data-item-id]")?.dataset.itemId);
+    if (!item) return;
+    const deleted = await item.deleteDialog();
+    if (deleted) this.#expandedPerks.delete(item.id);
+  }
+
+  /** Ouvre la fiche du Perk pour modifier son nom, son image et sa description. */
+  static #onEditPerk(event, target) {
+    this.actor.items.get(target.closest("[data-item-id]")?.dataset.itemId)?.sheet.render(true);
+  }
+
+  /**
+   * Affiche ou replie les Perks masqués. Bascule de classes CSS plutôt qu'un
+   * rendu complet, comme les onglets, pour ne pas fermer un éditeur ouvert.
+   */
+  static #onToggleHiddenPerks(event, target) {
+    this.#showHiddenPerks = !this.#showHiddenPerks;
+    const show = this.#showHiddenPerks;
+    this.element.querySelector(".perk-list")?.classList.toggle("show-hidden", show);
+    target.classList.toggle("active", show);
+    target.title = game.i18n.localize(show ? "OMENS13.Sheet.HideHiddenPerks" : "OMENS13.Sheet.ShowHiddenPerks");
+    const icon = target.querySelector("i");
+    icon?.classList.toggle("fa-eye", show);
+    icon?.classList.toggle("fa-eye-slash", !show);
+  }
+
+  /** Masque un Perk non choisi (il passe en bas de la liste, en gris), ou le réaffiche. */
+  static async #onTogglePerkHidden(event, target) {
+    const item = this.actor.items.get(target.closest("[data-item-id]")?.dataset.itemId);
+    if (item) await item.update({ "system.hidden": !item.system.hidden });
   }
 
   /**
@@ -372,38 +404,15 @@ export class Omens13CharacterSheet extends HandlebarsApplicationMixin(ActorSheet
     await postPerkCard(item);
   }
 
-  /**
-   * Bouton crayon à côté du titre : bascule le Perk en mode renommage,
-   * l'input de nom (masqué par défaut) devient visible et reçoit le focus.
-   * Voir #activatePerkRename pour la sortie du mode (Enter/blur).
-   */
-  static #onRenamePerk(event, target) {
-    const itemEl = target.closest(".perk-item");
-    if (!itemEl) return;
-    itemEl.classList.add("renaming");
-    const input = itemEl.querySelector(".perk-name-input");
-    input?.focus();
-    input?.select();
-  }
-
-  static async #onAddGear() {
-    const gear = [...this.actor.system.gear];
-    gear.push("");
-    await this.actor.update({ "system.gear": gear });
-  }
-
-  static async #onDeleteGear(event, target) {
-    const index = Number(target.dataset.index);
-    const gear = [...this.actor.system.gear];
-    gear.splice(index, 1);
-    await this.actor.update({ "system.gear": gear });
+  /** Bouton + de l'équipement : place le curseur dans le champ d'ajout. */
+  static #onAddGear() {
+    this.element.querySelector(".gear-new")?.focus();
   }
 
   /**
    * Bascule d'onglet en manipulant directement les classes CSS plutôt qu'en
-   * relançant un rendu complet : un ré-rendu détruirait l'éditeur ProseMirror
-   * en cours (voir #activateNotesEditor) si l'utilisateur était en train
-   * d'éditer ses Notes au moment de changer d'onglet.
+   * relançant un rendu complet : un ré-rendu détruirait un éditeur ProseMirror
+   * ouvert (Notes, Goal...) si l'utilisateur était en train d'écrire.
    */
   static #onSwitchTab(event, target) {
     const tab = target.dataset.tab;
@@ -417,7 +426,7 @@ export class Omens13CharacterSheet extends HandlebarsApplicationMixin(ActorSheet
   }
 
   static #onEditImage() {
-    const FilePickerImpl = foundry.applications?.apps?.FilePicker?.implementation ?? FilePicker;
+    const FilePickerImpl = foundry.applications.apps.FilePicker.implementation;
     new FilePickerImpl({
       type: "image",
       current: this.actor.img,

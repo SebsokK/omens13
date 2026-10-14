@@ -5,7 +5,7 @@ import { Omens13PerkData } from "./data/perk.mjs";
 import { Omens13CharacterSheet } from "./sheets/actor-character-sheet.mjs";
 import { Omens13PerkItemSheet } from "./sheets/item-perk-sheet.mjs";
 import { Omens13DiceBagApp } from "./apps/dice-bag-app.mjs";
-import { getOrCreateBourse, getBourseSync, cheatDeath } from "./dice/bourse-engine.mjs";
+import { getOrCreateBourse, getBourseSync, cheatDeath, cheatDeathBlocker } from "./dice/bourse-engine.mjs";
 import { postCheatDeathCard } from "./dice/chat-card.mjs";
 
 Hooks.once("init", () => {
@@ -42,8 +42,7 @@ Hooks.once("init", () => {
   // est volontairement pas une (voir dice-bag-app.mjs) : il n'apparaît donc pas
   // dans le sélecteur de feuille, et l'Acteur "bourse" qui le porte est masqué
   // de l'onglet Acteurs (voir le hook renderActorDirectory plus bas).
-  const Actors = foundry.documents?.collections?.Actors ?? globalThis.Actors;
-  const Items = foundry.documents?.collections?.Items ?? globalThis.Items;
+  const { Actors, Items } = foundry.documents.collections;
 
   Actors.registerSheet(SYSTEM_ID, Omens13CharacterSheet, {
     types: ["character"],
@@ -69,6 +68,9 @@ Hooks.once("init", () => {
 });
 
 Hooks.once("ready", async () => {
+  refreshWoundThresholds();
+  lastAct = getBourseSync()?.system.currentAct ?? null;
+
   if (game.user.isGM) {
     await getOrCreateBourse();
     await migratePerksToItems();
@@ -98,8 +100,7 @@ Hooks.once("ready", async () => {
 
   createDiceBagFab();
 
-  // Si le monde est chargé alors que le jeu est déjà en pause (rare, mais possible),
-  // le hook renderPause a pu se déclencher avant que ce module ne soit prêt à réagir.
+  // L'écran de pause a pu être affiché avant que les traductions soient prêtes.
   if (game.paused) patchPauseOverlay();
 });
 
@@ -154,7 +155,8 @@ async function migratePerksToItems() {
  * mémorisée par client (`diceBagFabPosition`, scope "client") — chaque
  * utilisateur le place une fois où ça l'arrange, ça reste là ensuite.
  * Un déplacement (mouvement > 4px) n'ouvre pas le panneau ; un simple clic
- * sans déplacement l'ouvre normalement.
+ * l'ouvre ou le ferme. La position est ramenée dans l'écran au chargement et
+ * quand la fenêtre est redimensionnée.
  */
 function createDiceBagFab() {
   if (document.getElementById("omens13-dice-bag-fab")) return;
@@ -165,9 +167,16 @@ function createDiceBagFab() {
   button.title = game.i18n.localize("OMENS13.Bourse.DefaultName");
   button.innerHTML = '<i class="fa-solid fa-sack-dollar"></i>';
 
+  const place = (right, bottom) => {
+    button.style.right = `${Math.min(window.innerWidth - 56, Math.max(4, right))}px`;
+    button.style.bottom = `${Math.min(window.innerHeight - 56, Math.max(4, bottom))}px`;
+  };
   const saved = game.settings.get(SYSTEM_ID, "diceBagFabPosition") ?? { right: 16, bottom: 84 };
-  button.style.right = `${saved.right}px`;
-  button.style.bottom = `${saved.bottom}px`;
+  place(saved.right, saved.bottom);
+  window.addEventListener("resize", () => {
+    const current = game.settings.get(SYSTEM_ID, "diceBagFabPosition") ?? saved;
+    place(current.right, current.bottom);
+  });
 
   let dragging = false;
   let moved = false;
@@ -194,10 +203,7 @@ function createDiceBagFab() {
     if (!moved && (Math.abs(dx) > 4 || Math.abs(dy) > 4)) moved = true;
     if (!moved) return;
 
-    const newRight = Math.min(window.innerWidth - 56, Math.max(4, startRight - dx));
-    const newBottom = Math.min(window.innerHeight - 56, Math.max(4, startBottom - dy));
-    button.style.right = `${newRight}px`;
-    button.style.bottom = `${newBottom}px`;
+    place(startRight - dx, startBottom - dy);
   });
 
   button.addEventListener("pointerup", async () => {
@@ -210,7 +216,7 @@ function createDiceBagFab() {
       const bottom = Math.round(window.innerHeight - rect.bottom);
       await game.settings.set(SYSTEM_ID, "diceBagFabPosition", { right, bottom });
     } else {
-      game.omens13.diceBagApp.render(true);
+      game.omens13.diceBagApp.toggle();
     }
   });
 
@@ -222,22 +228,8 @@ function createDiceBagFab() {
 }
 
 /**
- * Reskin de l'overlay "Game Paused" natif de Foundry (35e itération, retour
- * utilisateur) : `#pause` est une UI coeur (ApplicationV2 `Pause`), pas un
- * élément du système — impossible de la reconfigurer autrement qu'en
- * manipulant son DOM une fois rendue.
- *
- * 36e itération : tentative de remplacer l'icône en CSS pur (`content: url()`)
- * pour éliminer un flash de quelques frames de l'ancien logo/texte — RATÉE
- * (retour utilisateur avec capture d'écran : l'icône ET le texte natifs
- * étaient réapparus en permanence, pas juste le temps d'un flash). Cette
- * technique CSS ne s'est pas appliquée comme attendu dans cet environnement
- * (Electron/Chromium) sur ce type d'élément. 37e itération : retour à la
- * manipulation JS de `img.src` ci-dessous, qui était déjà confirmée
- * fonctionnelle dès la 35e itération (seul le flash restait à corriger). Le
- * flash lui-même venait du `setTimeout(..., 50)` de la 35e itération sur le
- * hook `pauseGame` (un délai délibéré, visible à l'oeil — ~3 frames à 60fps) :
- * resté supprimé, patch appelé immédiatement sur chaque signal.
+ * Remplace l'icône et le texte de l'écran de pause natif (GamePause, une
+ * application coeur de Foundry) par ceux du thème. Idempotente.
  */
 function patchPauseOverlay() {
   const pauseEl = document.getElementById("pause");
@@ -255,40 +247,63 @@ function patchPauseOverlay() {
   if (caption && caption.textContent !== label) caption.textContent = label;
 }
 
-// 38e itération (retour utilisateur : le patch tenait au premier affichage mais
-// pas après un cycle pause/dépause) : `renderPause` et `pauseGame` sont posés ici
-// par précaution, mais leur nom/comportement exact dans cette version de Foundry
-// n'a JAMAIS pu être vérifié en dehors d'une vraie session — le fait que le
-// patch ne survive pas à un second cycle suggère fortement qu'aucun des deux ne
-// se déclenche réellement ici (ou pas au bon moment), et que seul le fallback
-// `if (game.paused) patchPauseOverlay()` du hook `ready` avait fonctionné "au
-// lancement" (le monde était déjà en pause au chargement, ou c'était le tout
-// premier cycle après rechargement). Le MutationObserver devient donc le
-// mécanisme PRINCIPAL, pas un simple filet de sécurité : il ne dépend d'aucun
-// nom de hook, seulement du DOM lui-même. Élargi à `subtree: true` (couvre le
-// cas où #pause n'est pas un enfant DIRECT de <body>, ou si Foundry ne fait que
-// réinsérer/modifier son contenu interne à chaque bascule plutôt que de
-// recréer #pause en entier) et `attributes: true` filtré sur `src` (couvre le
-// cas où Foundry réutilise le même <img> mais réinitialise son `src` d'origine
-// à chaque pause). `patchPauseOverlay()` est idempotente (elle ne réécrit que
-// si la valeur diffère), donc aucun risque de boucle : notre propre écriture ne
-// redéclenche pas de second patch inutile.
-Hooks.on("renderPause", () => patchPauseOverlay());
-Hooks.on("pauseGame", () => patchPauseOverlay());
-Hooks.once("ready", () => {
-  new MutationObserver(() => patchPauseOverlay())
-    .observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ["src"] });
-});
+// GamePause recrée son icône et son texte à chaque affichage : on les remplace
+// juste après, avant que la page ne soit redessinée.
+Hooks.on("renderGamePause", () => patchPauseOverlay());
 
 /**
  * Le Dice Bag affiche l'état de la Bourse ET les Blessures de tous les personnages :
  * il doit donc se rafraîchir dès que l'un OU l'autre est modifié, même s'il n'est
  * "propriétaire" d'aucun de ces documents au sens ApplicationV2 classique.
  */
-Hooks.on("updateActor", actor => {
+Hooks.on("updateActor", (actor, changes) => {
   if (actor.type !== "character" && actor.type !== "bourse") return;
+  if (actor.type === "bourse" && foundry.utils.hasProperty(changes, "system.currentAct")) onActChange(actor.system.currentAct);
+  // Le seuil de mort de chaque personnage dépend des personnages choisis et de
+  // ceux déjà morts (taille du groupe, p.27) : on le recalcule quand ça change.
+  const groupChanged = foundry.utils.hasProperty(changes, "system.participants")
+    || foundry.utils.hasProperty(changes, "system.outOfStory");
+  if (groupChanged) refreshWoundThresholds();
   if (game.omens13.diceBagApp.rendered) game.omens13.diceBagApp.render();
 });
+
+/**
+ * Changement d'Acte : quand l'Hôte avance dans l'histoire, un écran de titre
+ * s'affiche chez tous les joueurs (chaque client reçoit la mise à jour de la
+ * Bourse). Rien quand on revient en arrière ou au Prologue.
+ */
+let lastAct = null;
+function onActChange(act) {
+  const previous = lastAct;
+  lastAct = act;
+  if (act <= (previous ?? 0)) return;
+  showActOverlay(act);
+}
+
+function showActOverlay(act) {
+  document.getElementById("omens13-act-overlay")?.remove();
+  const overlay = document.createElement("div");
+  overlay.id = "omens13-act-overlay";
+  overlay.innerHTML = `
+    <div class="act-card">
+      <img src="systems/omens13/assets/branding/death-icon.png" alt="" />
+      <div class="act-title">${game.i18n.localize("OMENS13.ActOverlay.Act")} ${["I", "II", "III"][act - 1]}</div>
+      <div class="act-subtitle">${game.i18n.localize(`OMENS13.ActOverlay.Subtitle${act}`)}</div>
+    </div>`;
+  overlay.addEventListener("click", () => overlay.remove());
+  overlay.addEventListener("animationend", event => {
+    if (event.target === overlay) overlay.remove();
+  });
+  document.body.appendChild(overlay);
+}
+
+/** Recalcule les données dérivées (seuils de Blessures) de tous les personnages et rafraîchit leurs fiches ouvertes. */
+function refreshWoundThresholds() {
+  for (const actor of game.actors.filter(a => a.type === "character")) {
+    actor.reset();
+    for (const app of Object.values(actor.apps)) if (app.rendered) app.render();
+  }
+}
 
 /**
  * L'Acteur "bourse" est un support de données technique, pas un personnage à
@@ -315,15 +330,16 @@ Hooks.on("renderActorDirectory", (app, html) => {
  * chat-card.mjs) d'une classe dédiée, pour pouvoir neutraliser en CSS la
  * bulle par défaut de Foundry (fond clair/bordure) qui entourait notre carte
  * déjà thémée — c'est ce qui donnait ce "contour blanc" incohérent avec le
- * reste du système. Écrit défensivement pour les deux hooks
- * (`renderChatMessageHTML` en V13+, `renderChatMessage` en plus ancien)
- * plutôt que de fouiller le DOM pour trouver notre carte.
+ * reste du système.
  */
 function markOmensChatMessage(message, html) {
   const flags = message?.flags?.omens13;
-  if (!flags?.checkResult && !flags?.perkCard && !flags?.cheatDeathCard) return;
-  const el = html instanceof HTMLElement ? html : html?.[0];
-  el?.classList?.add("omens13-chat-message");
+  if (!flags?.checkResult && !flags?.perkCard && !flags?.cheatDeathCard && !flags?.succumbCard) return;
+  html.classList.add("omens13-chat-message");
+  // Animations d'apparition (dés, Blessure) seulement pour les messages qui
+  // viennent d'arriver, pas pour tout l'historique au chargement du monde.
+  // Marge large : Dice So Nice n'affiche le message qu'après son animation 3D.
+  if (Date.now() - message.timestamp < 15000) html.classList.add("omens13-fresh");
 }
 
 /**
@@ -332,11 +348,9 @@ function markOmensChatMessage(message, html) {
  * UNIQUEMENT sur le tirage précis qui vient de causer la Blessure — plus fiable
  * qu'un drapeau global qui ne saurait pas distinguer plusieurs Blessures non
  * résolues en attente). `cheatDeathEligible` est figé au moment du Check
- * (flags.omens13.checkResult), mais l'éligibilité "en pratique" (déjà utilisé
- * cet Acte/cette histoire, plus de dé Safe dans le sac, propriétaire du
- * personnage) est réévaluée à CHAQUE rendu de la carte, exactement comme
- * `_prepareContext()` du Dice Bag recalcule `canCheatDeath` à chaque affichage
- * — pour refléter l'état réel au moment où le joueur regarde/clique, pas celui
+ * (flags.omens13.checkResult), mais l'éligibilité "en pratique" (voir
+ * cheatDeathBlocker() : déjà utilisé, plus de dé Safe, etc.) est réévaluée à
+ * CHAQUE rendu de la carte, comme `canCheatDeath` dans le Dice Bag — pour refléter l'état réel au moment où le joueur regarde/clique, pas celui
  * du Check d'origine (qui peut être plus ancien).
  *
  * Un seul écouteur de clic est posé par élément DOM (`dataset.omensBound`),
@@ -354,8 +368,7 @@ function activateCheckCardCheatDeath(message, html) {
   const flags = message?.flags?.omens13?.checkResult;
   if (!flags?.cheatDeathEligible) return;
 
-  const el = html instanceof HTMLElement ? html : html?.[0];
-  const btn = el?.querySelector(".cheat-death-card-btn");
+  const btn = html.querySelector(".cheat-death-card-btn");
   if (!btn) return;
 
   const actor = game.actors?.get(flags.actorId);
@@ -365,16 +378,7 @@ function activateCheckCardCheatDeath(message, html) {
     return;
   }
 
-  const bourse = getBourseSync();
-  const blockedReason = !bourse
-    ? "OMENS13.Bourse.NotReady"
-    : actor.system.cheatDeath.usedThisStory
-      ? "OMENS13.Bourse.CheatDeathStoryUsed"
-      : actor.system.cheatDeath.usedThisAct
-        ? "OMENS13.Bourse.CheatDeathActUsed"
-        : bourse.system.safeDiceInBag <= 0
-          ? "OMENS13.Bourse.NoSafeDiceLeft"
-          : null;
+  const blockedReason = cheatDeathBlocker(actor, getBourseSync());
 
   btn.disabled = !!blockedReason;
   btn.title = blockedReason ? game.i18n.localize(blockedReason) : "";
@@ -385,7 +389,7 @@ function activateCheckCardCheatDeath(message, html) {
   btn.addEventListener("click", async () => {
     const liveBourse = getBourseSync();
     if (!liveBourse) return;
-    const success = await cheatDeath(actor, liveBourse, { removeWound: true });
+    const success = await cheatDeath(actor, liveBourse);
     if (success) {
       btn.disabled = true;
       btn.title = "";
@@ -395,10 +399,6 @@ function activateCheckCardCheatDeath(message, html) {
 }
 
 Hooks.on("renderChatMessageHTML", (message, html) => {
-  markOmensChatMessage(message, html);
-  activateCheckCardCheatDeath(message, html);
-});
-Hooks.on("renderChatMessage", (message, html) => {
   markOmensChatMessage(message, html);
   activateCheckCardCheatDeath(message, html);
 });

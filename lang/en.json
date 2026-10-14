@@ -26,14 +26,19 @@
       "Title": "Check: {aspect}",
       "Hint": "{aspect} Aspect — base TN {tn}",
       "Difficulty": "Difficulty",
-      "Edges": "Edges (0-2)",
-      "Flaws": "Flaws (0-2)",
-      "FacingEvil": "Host-forced Omen (Facing Evil)",
+      "Edges": "Edges",
+      "Flaws": "Flaws",
+      "FacingEvil": "Host-forced Omen",
       "Harmless": "Harmless Check",
       "StrainedHint": "This Aspect is Strained: the Check includes at least 1 Flaw.",
       "PermanentFlawHint": "This character has 3 or more Wounds: the Check includes at least 1 Flaw (a source distinct from Aspect Strain).",
       "Roll": "Draw dice",
-      "Cancel": "Cancel"
+      "Cancel": "Cancel",
+      "Aspect": "Aspect",
+      "Gear": "Item used",
+      "NoGear": "— None —",
+      "GearEdge": "+1 Edge",
+      "GearBrokenFlaw": "broken: +1 Flaw"
     },
     "Sheet": {
       "CharacterTitle": "Character Sheet — 13 Omens",
@@ -53,22 +58,35 @@
       "PerkName": "Perk Name",
       "NewPerk": "New Perk",
       "PerkEffect": "Effect",
-      "PerkSelected": "Active",
+      "PerkSelected": "Owned",
       "PerkOwnedHint": "You possess this Perk",
       "PerkStrainHint": "Strained Perk (visual only, no mechanical effect)",
       "PerkNoDescription": "No description.",
       "ToggleDescription": "Show/hide description",
       "SendToChat": "Send to Chat",
-      "RenamePerk": "Rename",
       "Gear": "Gear",
-      "GearItem": "Item",
       "Notes": "Notes",
       "TabStats": "Stats",
       "TabNotes": "Notes",
       "Save": "Save",
       "UnnamedAspect": "Unnamed Aspect",
       "EditStoryAspects": "Edit",
-      "NoRatingWarning": "Choose a Rating for this Aspect first."
+      "NoRatingWarning": "Choose a Rating for this Aspect first.",
+      "EditPerk": "Edit Perk",
+      "DeletePerk": "Delete Perk",
+      "PerkHide": "Hide this Perk (not chosen)",
+      "PerkShow": "Show this Perk again",
+      "PerkHidden": "Hidden",
+      "ShowHiddenPerks": "Show hidden Perks",
+      "HideHiddenPerks": "Collapse hidden Perks",
+      "GearAdd": "+ Add an item",
+      "GearTagHint": "Click: make a Check with this item (+1 Edge) · Right-click: options",
+      "GearBrokenHint": "Broken or lost: using it gives a Flaw · Right-click: options",
+      "GearUse": "Make a Check with this item",
+      "GearRename": "Rename",
+      "GearBreak": "Broken / lost",
+      "GearRepair": "Repaired / found",
+      "GearDelete": "Delete"
     },
     "StoryAspectsDialog": {
       "Title": "Story Aspects",
@@ -102,11 +120,22 @@
       "UndoCheatDeath": "Undo this Cheat Death",
       "WoundDieHint": "Omen Die representing a Wound",
       "CheatDeathDieHint": "Safe Die spent on a Cheat Death",
-      "FatalWound": "Fatal Wound — the 4th Omen Die means death or despair",
+      "FatalWound": "Fatal Wound: the last Omen Die means death or despair",
       "NoCharacters": "No characters found.",
       "CheatDeathStoryUsed": "This character already cheated death this story.",
-      "CheatDeathActUsed": "This character already cheated death this Act.",
-      "NoSafeDiceLeft": "No Safe Dice left in the bag."
+      "CheatDeathActUsed": "The table already cheated death this Act.",
+      "NoSafeDiceLeft": "No Safe Dice left in the bag.",
+      "NoWoundToCheat": "This character has no Wound to replace with a Safe Die.",
+      "OutOfStory": "This character no longer takes part in the story.",
+      "OutOfStoryLabel": "Out of the story",
+      "Succumb": "Succumb",
+      "SuccumbConfirm": "{name} succumbs to their wounds or to despair. All the dice in front of this character return to the bag. Continue?",
+      "Resurrect": "Bring back into the story (fully restored)",
+      "NewStory": "New story",
+      "NewStoryConfirm": "Reset the bag (8 Safe Dice, no Omen Dice, Prologue) and fully restore every character: no Wounds, Cheat Death or Strain. Ratings, Perks and Gear are kept. Continue?",
+      "ChooseCharacters": "Choose characters",
+      "ChooseCharactersHint": "Tick the characters playing this story: only they appear in the Dice Bag.",
+      "NoParticipantsGM": "No character chosen. Use the button next to the title to pick the story's characters."
     },
     "Chat": {
       "TargetNumber": "TN",
@@ -114,8 +143,17 @@
       "Flaws": "Flaws",
       "FacingEvil": "Facing Evil",
       "WoundApplied": "Wound taken!",
-      "StrainSuggested": "Harmless Check: the Host may assign a Strain to the relevant Aspect.",
-      "CheatDeathAnnounce": "{name} cheats Death! Be careful... there is one less Safe Die in the bag now!"
+      "StrainSuggested": "Harmless Check: no Wound, but a Strain on {aspect}.",
+      "CheatDeathAnnounce": "{name} cheats Death! Be careful... there is one less Safe Die in the bag now!",
+      "SuccumbAnnounce": "{name} succumbs... All their dice return to the bag.",
+      "Die": {
+        "safe": "Safe Die",
+        "omen": "Omen Die"
+      },
+      "DieSource": {
+        "bag": "drawn from the bag",
+        "reserve": "added by the Host"
+      }
     },
     "UI": {
       "DeathAwaits": "Death Awaits..."
@@ -124,6 +162,12 @@
       "success": "Success",
       "successComplication": "Success with complication",
       "failure": "Failure"
+    },
+    "ActOverlay": {
+      "Act": "Act",
+      "Subtitle1": "The evil lies dormant… waiting.",
+      "Subtitle2": "The evil reveals itself.",
+      "Subtitle3": "The final reckoning."
     }
   }
 }

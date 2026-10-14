@@ -1,4 +1,4 @@
-import { RATING_TN, RATINGS, CORE_ASPECT_KEYS, WOUND_FLAW_THRESHOLD, WOUND_DEATH_THRESHOLD } from "../helpers/constants.mjs";
+import { RATING_TN, RATINGS, CORE_ASPECT_KEYS, WOUND_FLAW_THRESHOLD, WOUND_DEATH_THRESHOLD, groupWoundModifier } from "../helpers/constants.mjs";
 
 /**
  * Schéma d'un Core Aspect : la clé (courage, evade...) porte déjà son libellé
@@ -55,22 +55,40 @@ export class Omens13CharacterData extends foundry.abstract.TypeDataModel {
       // champ n'existe plus dans le schéma, toute donnée `system.perks`
       // résiduelle en base est inerte et ignorée.
 
+      // Équipement : un nom et un état "cassé ou perdu" (p.10). Un objet cassé
+      // reste dans la liste, pour pouvoir être réparé ou retrouvé plus tard.
       gear: new fields.ArrayField(
-        new fields.StringField({ required: true, blank: true, initial: "" }),
+        new fields.SchemaField({
+          name: new fields.StringField({ required: true, blank: true, initial: "" }),
+          broken: new fields.BooleanField({ required: true, initial: false })
+        }),
         { initial: [] }
       ),
 
       wounds: new fields.SchemaField({
-        value: new fields.NumberField({ required: true, integer: true, min: 0, initial: 0 }),
-        capacityModifier: new fields.NumberField({ required: true, integer: true, initial: 0 })
-        // Modificateur de seuil selon la taille du groupe (p.27) : ex. -1 pour groupe de 5, -2 puis -1 pour groupe de 6...
+        value: new fields.NumberField({ required: true, integer: true, min: 0, initial: 0 })
       }),
 
+      // Cheat Death (p.9) : une fois par histoire pour ce personnage, et une seule
+      // fois par Acte pour toute la table — `act` mémorise l'Acte où il a servi,
+      // pour que la limite par Acte se vérifie sur l'ensemble des personnages.
       cheatDeath: new fields.SchemaField({
-        usedThisAct: new fields.BooleanField({ required: true, initial: false }),
-        usedThisStory: new fields.BooleanField({ required: true, initial: false })
-      })
+        usedThisStory: new fields.BooleanField({ required: true, initial: false }),
+        act: new fields.NumberField({ required: true, nullable: true, integer: true, initial: null })
+      }),
+
+      // Personnage mort ou ayant succombé au désespoir (p.9) : ses dés sont
+      // retournés au sac et il ne participe plus à l'histoire.
+      outOfStory: new fields.BooleanField({ required: true, initial: false })
     };
+  }
+
+  /** Anciennes données : l'équipement était une simple liste de noms. */
+  static migrateData(source) {
+    if (Array.isArray(source.gear)) {
+      source.gear = source.gear.map(g => (typeof g === "string" ? { name: g, broken: false } : g));
+    }
+    return super.migrateData(source);
   }
 
   prepareDerivedData() {
@@ -86,10 +104,17 @@ export class Omens13CharacterData extends foundry.abstract.TypeDataModel {
       this.story[key].tn = computeTn(this.story[key]);
     }
 
-    const deathThreshold = Math.max(1, WOUND_DEATH_THRESHOLD + (this.wounds.capacityModifier ?? 0));
-    const flawThreshold = Math.max(1, WOUND_FLAW_THRESHOLD + (this.wounds.capacityModifier ?? 0));
+    // Le seuil de mort dépend de la taille du groupe, c'est-à-dire des personnages
+    // choisis dans le Dice Bag (Bourse). Au tout premier chargement, la collection
+    // des Acteurs n'existe pas encore : le seuil est recalculé au hook "ready".
+    const bourse = game.actors?.find(a => a.type === "bourse");
+    const participants = bourse?.system.participants ?? [];
+    const deadCount = participants.filter(id => game.actors.get(id)?.system.outOfStory).length;
+    const deathThreshold = Math.max(1, WOUND_DEATH_THRESHOLD + groupWoundModifier(participants.length, deadCount));
+    const flawThreshold = WOUND_FLAW_THRESHOLD;
 
     this.wounds.deathThreshold = deathThreshold;
+    this.wounds.max = deathThreshold; // barre de token (primaryTokenAttribute)
     this.wounds.flawThreshold = flawThreshold;
     this.wounds.hasPermanentFlaw = this.wounds.value >= flawThreshold;
     this.wounds.isDead = this.wounds.value >= deathThreshold;

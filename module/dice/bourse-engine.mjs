@@ -72,7 +72,7 @@ function drawFromBag(safeCount, omenCount, count) {
  * @returns {Promise<{roll: Roll, values: number[]}>}
  */
 async function rollDice(types) {
-  const DieCls = foundry.dice?.terms?.Die ?? globalThis.Die;
+  const DieCls = foundry.dice.terms.Die;
   const formula = types.map(() => "1d6").join(" + ");
   const roll = new Roll(formula);
 
@@ -100,6 +100,8 @@ async function rollDice(types) {
  * @param {object} params
  * @param {Actor} params.actor            Le personnage qui fait le jet.
  * @param {string} params.aspectLabel     Libellé affiché de l'Aspect (ex. "Evade", "Charm").
+ * @param {string} [params.aspectPath]    Chemin de l'Aspect testé (ex. "core.evade"), pour y poser la
+ *   Strain d'un Check sans danger.
  * @param {number} params.baseTn          TN de base de l'Aspect (avant difficulté).
  * @param {keyof DIFFICULTY_MODIFIER} [params.difficulty="average"]
  * @param {number} [params.edges=0]       Nombre d'Edges déclarés (0-2).
@@ -112,6 +114,7 @@ async function rollDice(types) {
 export async function performCheck({
   actor,
   aspectLabel,
+  aspectPath,
   baseTn,
   difficulty = "average",
   edges = 0,
@@ -123,7 +126,7 @@ export async function performCheck({
   if (!bourse) return null;
 
   // 1. Neutralisation Edge/Flaw (p.8), plafonnée à 2 de chaque côté.
-  edges = Math.clamp ? Math.clamp(edges, 0, 2) : Math.max(0, Math.min(2, edges));
+  edges = Math.clamp(edges, 0, 2);
   const totalFlawSources = Math.max(0, Math.min(2, flaws)) + Math.max(0, facingEvilOmen);
   let net = edges - totalFlawSources;
   net = Math.max(-2, Math.min(2, net));
@@ -249,9 +252,11 @@ export async function performCheck({
       // 41e itération, voir déclaration de cheatDeathEligible plus haut.
       cheatDeathEligible = dice.some(d => d.type === "safe");
     }
-  } else if (strainFromHarmless) {
-    // La Strain doit être assignée par l'Hôte à l'Aspect concerné : on ne l'active pas
-    // automatiquement ici (laissé à la discrétion narrative), mais on le signale dans le résultat.
+  } else if (strainFromHarmless && aspectPath) {
+    // Check sans danger (p.11) : Strain sur l'Aspect testé à la place de la
+    // Blessure ; le dé Omen n'a jamais quitté le sac. L'Hôte peut la retirer en
+    // décochant la case Strain sur la fiche.
+    await actor.update({ [`system.${aspectPath}.strain`]: true });
   }
 
   return {
@@ -272,6 +277,7 @@ export async function performCheck({
     total,
     outcome,
     woundApplied,
+    woundDie: woundApplied ? woundDie : null,
     cheatDeathEligible,
     strainFromHarmless,
     act,
@@ -300,53 +306,49 @@ export async function setCurrentAct(bourse, act) {
 }
 
 /**
- * Cheat Death (p.9) : au lieu de placer le dé Omen tiré en Blessure, le personnage
- * place un dé Safe devant lui à la place. Le dé Omen retourne au sac, mais le
- * dé Safe est définitivement retiré du sac (réduisant le nombre de Safe Dice disponibles).
- * Utilisable une fois par Acte, une seule fois par histoire.
- *
- * @param {object} [options]
- * @param {boolean} [options.removeWound=false]  41e itération — si `true`, retire
- *   aussi 1 Blessure au personnage (via `adjustWound()`, pas un update brut, pour
- *   rester cohérent avec la logique de repli sur le sac déjà validée aux 31e/32e/
- *   39e itérations). À utiliser UNIQUEMENT quand ce Cheat Death est déclenché
- *   depuis la roll card d'un Check qui vient de causer une Blessure précise
- *   (voir performCheck() / cheatDeathEligible, et #onCheatDeathFromCard dans
- *   omens13.mjs). Le bouton autonome du Dice Bag (dice-bag-app.mjs), lui,
- *   continue d'appeler cheatDeath() SANS ce paramètre : action "libre" à la
- *   discrétion de l'Hôte, découplée de tout Check précis, qui ne touche donc
- *   jamais aux Blessures (comportement historique inchangé).
+ * Raison pour laquelle ce personnage ne peut pas tromper la mort maintenant
+ * (clé de traduction), ou null s'il le peut. Règles p.9 : une seule fois par
+ * histoire pour ce personnage, une seule fois par Acte pour toute la table, et
+ * il faut une Blessure à remplacer et un dé Safe dans le sac. La condition "le
+ * jet contenait au moins un dé Safe" dépend du tirage et se vérifie à part
+ * (voir cheatDeathEligible dans performCheck()).
  */
-export async function cheatDeath(actor, bourse, { removeWound = false } = {}) {
-  if (actor.system.cheatDeath.usedThisStory) {
-    ui.notifications?.warn(game.i18n.localize("OMENS13.Bourse.CheatDeathStoryUsed"));
-    return false;
-  }
-  if (actor.system.cheatDeath.usedThisAct) {
-    ui.notifications?.warn(game.i18n.localize("OMENS13.Bourse.CheatDeathActUsed"));
-    return false;
-  }
-  if (bourse.system.safeDiceInBag <= 0) {
-    ui.notifications?.warn(game.i18n.localize("OMENS13.Bourse.NoSafeDiceLeft"));
-    return false;
-  }
-
-  await bourse.update({ "system.safeDiceInBag": bourse.system.safeDiceInBag - 1 });
-  await actor.update({
-    "system.cheatDeath.usedThisAct": true,
-    "system.cheatDeath.usedThisStory": true
-  });
-
-  if (removeWound) {
-    await adjustWound(actor, bourse, -1);
-  }
-
-  return true;
+export function cheatDeathBlocker(actor, bourse) {
+  if (!bourse) return "OMENS13.Bourse.NotReady";
+  if (actor.system.outOfStory) return "OMENS13.Bourse.OutOfStory";
+  if (actor.system.cheatDeath.usedThisStory) return "OMENS13.Bourse.CheatDeathStoryUsed";
+  const act = bourse.system.currentAct;
+  const tableUsedThisAct = game.actors.some(a => a.type === "character" && a.system.cheatDeath.act === act);
+  if (tableUsedThisAct) return "OMENS13.Bourse.CheatDeathActUsed";
+  if (actor.system.wounds.value <= 0) return "OMENS13.Bourse.NoWoundToCheat";
+  if (bourse.system.safeDiceInBag <= 0) return "OMENS13.Bourse.NoSafeDiceLeft";
+  return null;
 }
 
-/** À appeler par l'Hôte au changement d'Acte pour réinitialiser les usages "par Acte". */
-export async function resetPerActUsage(actor) {
-  await actor.update({ "system.cheatDeath.usedThisAct": false });
+/**
+ * Cheat Death (p.9) : la Blessure qui vient d'être reçue est remplacée par un
+ * dé Safe posé devant le personnage. Le dé Omen n'étant plus gardé devant lui,
+ * il retourne au sac comme les autres dés du Check ; le dé Safe, lui, quitte
+ * définitivement le sac — le sac devient donc plus dangereux pour tout le monde.
+ * Le dé Safe ne compte pas dans les Blessures.
+ */
+export async function cheatDeath(actor, bourse) {
+  const blocker = cheatDeathBlocker(actor, bourse);
+  if (blocker) {
+    ui.notifications?.warn(game.i18n.localize(blocker));
+    return false;
+  }
+
+  await bourse.update({
+    "system.safeDiceInBag": bourse.system.safeDiceInBag - 1,
+    "system.omenInBag": Math.min(TOTAL_OMEN_DICE, bourse.system.omenInBag + 1)
+  });
+  await actor.update({
+    "system.wounds.value": actor.system.wounds.value - 1,
+    "system.cheatDeath.usedThisStory": true,
+    "system.cheatDeath.act": bourse.system.currentAct
+  });
+  return true;
 }
 
 /**
@@ -366,6 +368,7 @@ export async function resetPerActUsage(actor) {
  * simplement d'elle-même, sans risque de dépassement dans ce sens.
  */
 export async function adjustWound(actor, bourse, delta) {
+  if (actor.system.outOfStory) return false;
   const current = actor.system.wounds.value;
   const max = actor.system.wounds.deathThreshold;
   const next = Math.max(0, Math.min(max, current + delta));
@@ -391,19 +394,82 @@ export async function adjustWound(actor, bourse, delta) {
 }
 
 /**
- * Annule un Cheat Death (25e itération, correction d'erreur de manip) : redonne le
- * dé Safe retiré à `cheatDeath()` et réinitialise les deux drapeaux d'usage
- * (Acte + Histoire) pour que le personnage puisse à nouveau l'utiliser. Ne fait
- * rien si aucun Cheat Death n'a été enregistré (bouton non affiché dans ce cas
- * de toute façon, ce garde-fou est une double sécurité).
+ * Annule un Cheat Death déclenché par erreur : exact inverse de cheatDeath()
+ * — le dé Safe revient au sac, le dé Omen en ressort pour redevenir une Blessure.
  */
 export async function undoCheatDeath(actor, bourse) {
-  if (!actor.system.cheatDeath.usedThisAct && !actor.system.cheatDeath.usedThisStory) return false;
+  if (!actor.system.cheatDeath.usedThisStory || actor.system.outOfStory) return false;
 
-  await bourse.update({ "system.safeDiceInBag": Math.min(DEFAULT_SAFE_DICE, bourse.system.safeDiceInBag + 1) });
+  await bourse.update({
+    "system.safeDiceInBag": Math.min(DEFAULT_SAFE_DICE, bourse.system.safeDiceInBag + 1),
+    "system.omenInBag": Math.max(0, bourse.system.omenInBag - 1)
+  });
   await actor.update({
-    "system.cheatDeath.usedThisAct": false,
-    "system.cheatDeath.usedThisStory": false
+    "system.wounds.value": Math.min(actor.system.wounds.deathThreshold, actor.system.wounds.value + 1),
+    "system.cheatDeath.usedThisStory": false,
+    "system.cheatDeath.act": null
   });
   return true;
+}
+
+/**
+ * Death and Despair (p.9) : le personnage qui a son dernier dé Omen ne participe
+ * plus à l'histoire, et TOUS les dés devant lui retournent au sac — ses dés Omen
+ * de Blessure comme le dé Safe d'un éventuel Cheat Death. Déclenché à la main
+ * (pas au moment de la Blessure) pour laisser au joueur la possibilité de
+ * tromper la mort sur cette dernière Blessure.
+ */
+export async function succumb(actor, bourse) {
+  if (actor.system.outOfStory || !actor.system.wounds.isDead) return false;
+
+  const safeDieInFront = actor.system.cheatDeath.usedThisStory ? 1 : 0;
+  await bourse.update({
+    "system.omenInBag": Math.min(TOTAL_OMEN_DICE, bourse.system.omenInBag + actor.system.wounds.value),
+    "system.safeDiceInBag": Math.min(DEFAULT_SAFE_DICE, bourse.system.safeDiceInBag + safeDieInFront)
+  });
+  await actor.update({
+    "system.wounds.value": 0,
+    "system.outOfStory": true
+  });
+  return true;
+}
+
+/**
+ * Remet un personnage à neuf pour rejouer une histoire : plus de Blessure, de
+ * Cheat Death ni de Strain (Aspects et Perks), et de retour dans l'histoire.
+ * Ne touche pas au sac : à utiliser sur un personnage déjà retiré de l'histoire
+ * (ses dés sont retournés au sac par succumb()), ou via startNewStory() qui
+ * remet le sac à zéro.
+ */
+export async function resetCharacter(actor) {
+  const update = {
+    "system.wounds.value": 0,
+    "system.cheatDeath.usedThisStory": false,
+    "system.cheatDeath.act": null,
+    "system.outOfStory": false
+  };
+  for (const group of ["core", "story"]) {
+    for (const key of Object.keys(actor.system[group])) update[`system.${group}.${key}.strain`] = false;
+  }
+  await actor.update(update);
+
+  const strainedPerks = actor.items.filter(i => i.type === "perk" && i.system.strain);
+  if (strainedPerks.length) {
+    await actor.updateEmbeddedDocuments("Item", strainedPerks.map(i => ({ _id: i.id, "system.strain": false })));
+  }
+}
+
+/**
+ * Nouvelle histoire : sac de départ (8 dés Safe, aucun Omen — les 13 sont dans
+ * la Réserve de l'Hôte), retour au Prologue, et tous les personnages remis à neuf.
+ */
+export async function startNewStory(bourse) {
+  await bourse.update({
+    "system.safeDiceInBag": DEFAULT_SAFE_DICE,
+    "system.omenInBag": 0,
+    "system.currentAct": 0
+  });
+  for (const actor of game.actors.filter(a => a.type === "character")) {
+    await resetCharacter(actor);
+  }
 }

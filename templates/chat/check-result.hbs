@@ -16,7 +16,7 @@
 
     <div class="dice-row">
       {{#each diceDisplay as |die|}}
-        <span class="die die-{{die.type}} {{#if die.used}}used{{else}}discarded{{/if}}" title="{{die.type}} ({{die.source}})">
+        <span class="die die-{{die.type}} {{#if die.used}}used{{else}}discarded{{/if}} {{#if die.wound}}wound{{/if}}" style="--i: {{die.index}}" title="{{localize (concat 'OMENS13.Chat.Die.' die.type)}} ({{localize (concat 'OMENS13.Chat.DieSource.' die.source)}})">
           {{die.value}}
         </span>
       {{/each}}
@@ -27,10 +27,11 @@
       <span class="outcome-label">{{localize (concat "OMENS13.Outcome." outcome)}}</span>
     </div>
 
-    {{#if (or edges flaws facingEvilOmen)}}
+    {{#if (or edges flaws facingEvilOmen gear)}}
       <div class="modifiers-row">
         {{#if edges}}<span class="mod edge">{{localize "OMENS13.Chat.Edges"}} {{edges}}</span>{{/if}}
         {{#if flaws}}<span class="mod flaw">{{localize "OMENS13.Chat.Flaws"}} {{flaws}}</span>{{/if}}
+        {{#if gear}}<span class="mod gear {{#if gear.broken}}broken{{/if}}"><i class="fa-solid fa-toolbox"></i> {{gear.name}}</span>{{/if}}
         {{#if facingEvilOmen}}<span class="mod facing-evil">{{localize "OMENS13.Chat.FacingEvil"}} {{facingEvilOmen}}</span>{{/if}}
       </div>
     {{/if}}
@@ -40,13 +41,13 @@
     {{/if}}
     {{#if cheatDeathEligible}}
       <div class="cheat-death-offer">
-        <button type="button" class="cheat-death-card-btn" data-action="cheatDeathFromCard" data-actor-id="{{actor.id}}">
+        <button type="button" class="cheat-death-card-btn">
           <i class="fa-solid fa-skull"></i> {{localize "OMENS13.Bourse.CheatDeath"}}
         </button>
       </div>
     {{/if}}
     {{#if strainFromHarmless}}
-      <div class="strain-banner">{{localize "OMENS13.Chat.StrainSuggested"}}</div>
+      <div class="strain-banner">{{localize "OMENS13.Chat.StrainSuggested" aspect=aspectLabel}}</div>
     {{/if}}
   </div>
 </div>

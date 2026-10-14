@@ -318,27 +318,10 @@
   color: var(--o13-text-muted);
 }
 
-/* width: 100% + box-sizing (16e itération) : sans ça, l'encart Goal ne
-   s'étirait pas jusqu'au bord du bloc d'en-tête (l'éditeur ProseMirror ne
-   reprend pas automatiquement toute la largeur disponible malgré le flex
-   column parent) — d'où l'espace vide constaté à droite, entre la boîte et
-   l'icone Blessures. padding-right dégagé pour ne plus jamais passer sous le
-   crayon "Éditer" (positionné en absolute en haut à droite), qui pouvait
-   chevaucher la dernière ligne du texte. */
-.omens13 .goal-field .editor {
-  min-height: 44px;
-  overflow: visible;
-  width: 100%;
-  box-sizing: border-box;
-}
-
-.omens13 .goal-field .editor-content {
-  min-height: 30px;
-  padding: 0.25em 1.7em 0.25em 0.4em;
+.omens13 .goal-field prose-mirror {
+  --min-height: 2.4em;
+  padding: 0.2em 0.4em;
   font-size: 0.85em;
-  overflow: visible;
-  width: 100%;
-  box-sizing: border-box;
 }
 
 /* .wounds-summary est un simple frère flex de .name-traits-col dans
@@ -527,12 +510,7 @@
   pointer-events: none;
 }
 
-/* 24e itération : retour utilisateur — Gear doit avoir la MÊME présentation
-   que Perks, pas l'inverse de ce qui avait été fait en 23e itération (un
-   malentendu sur "enlever les cadres du bloc GEAR", qui visait les cadres
-   INTERNES, pas le cadre de section). Donc : `.gear` rejoint `.perks`/
-   `.notes` avec un seul encadré autour de tout le bloc, et ce sont les LIGNES
-   à l'intérieur qui perdent leur cadre individuel (voir .gear-row plus bas). */
+/* Blocs Perks, Gear et Notes : un seul encadré autour de chaque section. */
 .omens13 .perks, .omens13 .gear, .omens13 .notes {
   background: var(--o13-surface);
   border: 1px solid var(--o13-border);
@@ -548,72 +526,87 @@
   background-position: center;
 }
 
-/* Lignes de Gear sans cadre individuel (24e itération, même traitement que
-   les Perks) : un filet de séparation entre lignes plutôt qu'une boîte par
-   ligne, et le champ texte lui-même perd son fond/bordure d'input pour
-   flotter dans la ligne (le focus reste visible via le box-shadow de la
-   règle générique :focus, qui ne dépend pas d'une bordure existante). */
-.omens13 .gear-row {
+/* Équipement en étiquettes : clic = Check avec l'objet, clic droit = options
+   (renommer, casser/réparer, supprimer). Un objet cassé ou perdu reste dans
+   la liste, grisé et barré. */
+.omens13 .gear-tags {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 0.4em;
-  padding: 0.4em 0;
-  border-bottom: 1px solid var(--o13-border);
+  gap: 0.35em;
 }
 
-.omens13 .gear-row:last-child {
-  border-bottom: none;
-  padding-bottom: 0;
+.omens13 .gear-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+  padding: 0.2em 0.65em;
+  border: 1px solid color-mix(in srgb, var(--o13-safe-die) 25%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--o13-safe-die) 6%, var(--o13-surface));
+  font-family: "Epilogue", sans-serif;
+  font-size: 0.85em;
+  cursor: pointer;
+  user-select: none;
+  transition: border-color 0.15s ease, background 0.15s ease;
 }
 
-.omens13 .gear-row input[type="text"] {
-  flex: 1;
-  border: none;
+.omens13 .gear-tag:hover {
+  border-color: var(--o13-primary-light);
+  background: color-mix(in srgb, var(--o13-primary) 25%, var(--o13-surface));
+}
+
+.omens13 .gear-tag.broken {
+  color: var(--o13-text-muted);
+  text-decoration: line-through;
+  opacity: 0.6;
+  border-style: dashed;
+}
+
+.omens13 .gear-tag.broken i {
+  text-decoration: none;
+  color: var(--o13-danger);
+  font-size: 0.85em;
+}
+
+/* Champ d'ajout, à la suite des étiquettes. */
+.omens13 input.gear-new {
+  flex: 1 0 9em;
+  min-width: 9em;
+  border: 1px dashed var(--o13-border);
+  border-radius: 999px;
   background: transparent;
-  border-radius: 3px;
+  font-family: "Epilogue", sans-serif;
+  font-size: 0.85em;
+  padding: 0.2em 0.65em;
 }
 
-/* Icône Effacer masquée par défaut, révélée au survol de la ligne — même
-   principe que .perk-header .delete-button (23e itération). */
-.omens13 .gear-row .delete-button {
-  opacity: 0;
+/* Perks : une ligne par Perk (Possédé, nom, outils au survol, Strain, Masquer,
+   chevron), et la description dans un encart qui se déplie sous la ligne. */
+.omens13 .perk-item {
+  padding: 0.3em 0;
   transition: opacity 0.15s ease;
 }
 
-.omens13 .gear-row:hover .delete-button {
-  opacity: 1;
-}
-
-/* Perks (20e itération) : chaque Perk est un Item embarqué affiché en
-   accordéon — une ligne "checkbox + nom" toujours visible, une description
-   ProseMirror repliée par défaut qu'on déplie via le chevron.
-   22e itération — "trop de cadres" (retour utilisateur) : la carte encadrée
-   par Perk (bordure + coins arrondis) est remplacée par un simple filet de
-   séparation en bas de ligne, beaucoup plus léger. Voir aussi .perk-body
-   .editor plus bas pour la description, qui perd elle aussi son cadre. */
-.omens13 .perk-item {
-  padding: 0.4em 0;
-  border-bottom: 1px solid var(--o13-border);
-}
-
-.omens13 .perk-item:last-child {
-  border-bottom: none;
-  padding-bottom: 0;
+/* Filet AU-DESSUS de chaque Perk sauf le premier : quand les Perks masqués
+   (en fin de liste) sont repliés, aucun filet ne reste sous le dernier visible. */
+.omens13 .perk-item + .perk-item {
+  border-top: 1px solid var(--o13-border);
 }
 
 .omens13 .perk-header {
   display: flex;
   align-items: center;
-  gap: 0.4em;
+  gap: 0.45em;
+  padding: 0.15em 0.3em;
+  border-radius: 4px;
 }
 
-/* Case "Perk possédé" — bouton rond doré/jaune (32e itération, retour couleur en 34e) :
-   avant la 32e itération, cette case (system.selected) avait exactement le même look
-   natif que la case Strain d'Aspect, alors qu'elle représente autre chose ("je possède
-   ce Perk"). Repensée en bouton rond plein quand coché, pour ne plus confondre les deux
-   avec .perk-strain-toggle ci-dessous. La 32e/33e itération l'avaient posée en rouge
-   (var(--o13-danger)), mais l'utilisateur a demandé en 34e itération une couleur
-   distincte du rouge Strain — jaune/doré (var(--o13-owned)), comme avant la refonte. */
+.omens13 .perk-header:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+/* Case "Possédé" : rond doré. */
 .omens13 input.perk-owned {
   appearance: none;
   -webkit-appearance: none;
@@ -637,28 +630,11 @@
   border-color: var(--o13-owned);
 }
 
-/* Case Strain — Perks ET Aspects (33e itération, corrige la 32e) : la 32e
-   itération avait laissé ces deux cases sans AUCUN style (juste `cursor` pour
-   la version Perk), ce qui les faisait retomber sur l'apparence par défaut du
-   thème de formulaires coeur de Foundry — un carré plein "doré/jaune" une fois
-   coché, très différent du bouton rond de .perk-owned juste à côté et
-   incohérent avec la palette "Abyssal Omen". Repris avec le même traitement
-   `appearance:none` que .perk-owned, mais en carré (plutôt qu'en rond) pour
-   rester visuellement distinct du bouton "possédé" — couleur d'accent rouge
-   (var(--o13-danger)) une fois cochés, cohérente avec l'effet visuel Strain sur
-   la ligne (voir .strained plus loin pour les Perks, .col-strain.strained pour
-   les Aspects). Depuis la 34e itération, .perk-owned est repassé au jaune/doré
-   (var(--o13-owned)) pour rester bien distinct visuellement de ces deux cases
-   Strain, qui restent rouges. Toujours visible (contrairement à Renommer/
-   Effacer, qui restent en hover-only sur les Perks). Aucun effet mécanique sur
-   les Perks ; force un Flaw sur les Aspects (voir check-dialog.mjs) — dans les
-   deux cas, purement une case à cocher standard côté binding (data-scope, voir
-   #activateManualFields). */
+/* Case Strain (Perks et Aspects) : carré rouge. */
 .omens13 input.aspect-strain-toggle,
 .omens13 input.perk-strain-toggle {
   appearance: none;
   -webkit-appearance: none;
-  -moz-appearance: none;
   width: 15px;
   height: 15px;
   margin: 0;
@@ -681,11 +657,7 @@
   border-color: var(--o13-danger);
 }
 
-/* Filet de sécurité : si le CSS coeur de Foundry dessine sa coche via un
-   pseudo-élément plutôt que via `background`/`appearance` (ce qui expliquerait
-   que la coche dorée par défaut ait survécu à `appearance:none` sur .perk-owned
-   dans certains cas), on neutralise explicitement tout ::before/::after sur nos
-   trois cases personnalisées pour ne jamais laisser filtrer un glyphe hérité. */
+/* Le CSS coeur dessine sa coche via des pseudo-éléments : on les neutralise. */
 .omens13 input.perk-owned::before,
 .omens13 input.perk-owned::after,
 .omens13 input.aspect-strain-toggle::before,
@@ -695,149 +667,128 @@
   content: none !important;
 }
 
-.omens13 .perk-item.strained .perk-title,
-.omens13 .perk-item.strained .perk-name-input {
-  color: var(--o13-danger);
-}
-
-.omens13 .perk-item.strained .perk-header {
-  background: rgba(255, 92, 92, 0.12);
-  border-radius: 4px;
-}
-
-/* Bouton Effacer assorti à la taille du bouton Éditer (24e itération, retour
-   utilisateur) : plus petit que le .delete-button générique (26px, utilisé
-   ailleurs comme dans Gear), pour que EDITER/EFFACER se répondent visuellement
-   dans la ligne d'un Perk. */
-.omens13 .perk-header .delete-button {
-  width: 22px;
-  height: 22px;
-}
-
-/* Titre du Perk (21e itération) : un <span> cliquable par défaut (hover
-   rouge, clic = envoi au Chat, voir #onSendPerkToChat) plutôt qu'un input —
-   l'input de renommage (.perk-name-input) reste dans le DOM mais caché, et
-   n'apparaît qu'en mode ".renaming" (basculé par le bouton crayon, voir
-   #onRenamePerk) : les deux usages (envoyer au Chat / renommer) ne peuvent
-   pas partager le même clic sur le même élément. */
+/* Nom du Perk : clic = envoi au Chat. */
 .omens13 .perk-title {
   flex: 1;
   min-width: 0;
-  cursor: pointer;
-  padding: 3px 5px;
-  border-radius: 3px;
-  font-family: "JetBrains Mono", "Courier New", monospace;
-  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+  font-family: "Epilogue", sans-serif;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.15s ease;
 }
 
 .omens13 .perk-title:hover {
-  background: rgba(136, 0, 0, 0.35);
-  color: var(--o13-text);
+  color: var(--o13-primary-light);
 }
 
-.omens13 .perk-name-input {
-  display: none;
-  flex: 1;
-  min-width: 0;
+.omens13 .perk-item.strained .perk-title {
+  color: var(--o13-danger);
 }
 
-.omens13 .perk-item.renaming .perk-title {
-  display: none;
-}
-
-.omens13 .perk-item.renaming .perk-name-input {
-  display: block;
-}
-
-/* Chevron "déplier" recalé sur la même boîte que Éditer/Effacer (22px, au
-   lieu de 26px) pour que les trois boutons alignés à droite s'assortissent
-   (24e itération) — l'icône elle-même reste plus petite (voir .perk-toggle i
-   plus bas) pour rester visuellement plus discrète que les deux actions. */
-.omens13 .perk-toggle {
+/* Boutons sans cadre de la ligne : outils (Modifier/Supprimer), Masquer, chevron. */
+.omens13 .perk-header button.perk-tool,
+.omens13 .perk-header button.perk-hide,
+.omens13 .perk-header button.perk-toggle {
   width: 22px;
   height: 22px;
   padding: 0;
   flex: 0 0 auto;
-}
-
-/* Bouton "déplier" en vrai mode fantôme (23e itération, retour utilisateur :
-   seul ce bouton reste visible en permanence, les autres passent en survol
-   uniquement — voir .rename-button/.delete-button plus bas). Le sélecteur
-   `.omens13 button.perk-toggle` (avec l'élément `button`) est nécessaire pour
-   égaliser la spécificité avec la règle générique `.omens13
-   button:not(.header-control)` (qui pose fond + bordure) : à spécificité
-   égale, l'ordre de déclaration (cette règle est plus bas dans le fichier)
-   tranche en faveur du style fantôme. Sans l'élément `button` ici, la règle
-   générique gagnait quand même malgré `background:transparent;border:none;`
-   posés plus haut — c'est resté invisible jusqu'ici. */
-.omens13 button.perk-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   background: transparent;
   border: none;
-}
-
-.omens13 .perk-toggle i {
-  font-size: 0.8em;
   color: var(--o13-text-muted);
-  transition: color 0.15s ease, transform 0.15s ease;
+  font-size: 0.8em;
 }
 
-.omens13 .perk-toggle:hover i {
-  color: var(--o13-primary-light);
+.omens13 .perk-header button.perk-tool:hover,
+.omens13 .perk-header button.perk-hide:hover,
+.omens13 .perk-header button.perk-toggle:hover {
+  background: transparent;
+  color: var(--o13-text);
 }
 
-.omens13 .perk-item.expanded .perk-toggle i {
-  transform: rotate(180deg);
+.omens13 .perk-header button.perk-tool.danger:hover {
+  color: var(--o13-danger);
 }
 
-/* Renommer/Supprimer masqués par défaut, révélés au survol de la ligne
-   (23e itération) — seul le chevron "déplier" reste visible en permanence. */
-.omens13 .perk-header .rename-button,
-.omens13 .perk-header .delete-button {
+/* Modifier/Supprimer n'apparaissent qu'au survol de la ligne. */
+.omens13 .perk-tools {
+  display: flex;
+  gap: 0.1em;
   opacity: 0;
   transition: opacity 0.15s ease;
 }
 
-.omens13 .perk-header:hover .rename-button,
-.omens13 .perk-header:hover .delete-button {
+.omens13 .perk-header:hover .perk-tools,
+.omens13 .perk-tools:focus-within {
   opacity: 1;
 }
 
-/* padding-left aligné approximativement sous le titre (largeur case à cocher
-   + espace) plutôt que collé au bord gauche : la description se lit dans le
-   prolongement visuel du nom du Perk au-dessus, pas comme un bloc à part. */
+.omens13 .perk-toggle i {
+  transition: transform 0.2s ease;
+}
+
+.omens13 .perk-item.expanded .perk-toggle i {
+  transform: rotate(180deg);
+  color: var(--o13-primary-light);
+}
+
+/* Description dépliée : un encart gris sous la ligne (ton des dés Safe), pour
+   ne pas se confondre avec les filets rouges qui séparent les Perks. */
 .omens13 .perk-body {
   display: none;
-  padding: 0 1.8em 0 1.7em;
+  margin: 0.3em 0.3em 0.25em 1.75em;
 }
 
 .omens13 .perk-item.expanded .perk-body {
   display: block;
-  padding-top: 0.3em;
-  padding-bottom: 0.2em;
 }
 
-/* Description "sans cadre" (22e itération, retour utilisateur : trop de
-   cadres, composition à faire respirer) : contrairement à Notes/Goal, la
-   description d'un Perk n'a plus de boîte visible (ni bordure ni fond) — le
-   texte flotte directement sur le fond de la fiche. Les min-height globaux
-   de .editor/.editor-content (120px/90px plus bas, pensés pour Notes/Goal
-   qui occupent tout un bloc dédié) sont aussi réduits ici pour que
-   l'accordéon épouse la taille réelle du texte, tout en gardant un minimum
-   pour rester cliquable quand la description est vide. Le padding-right sur
-   .editor-content est conservé : le crayon "Éditer" reste en position
-   absolute par-dessus le texte, même sans cadre autour. */
-.omens13 .perk-body .editor {
-  border: none;
-  background: transparent;
-  min-height: 0;
+.omens13 .perk-description {
+  background: color-mix(in srgb, var(--o13-safe-die) 6%, var(--o13-surface));
+  border: 1px solid color-mix(in srgb, var(--o13-safe-die) 18%, transparent);
+  border-left: 3px solid color-mix(in srgb, var(--o13-safe-die) 55%, transparent);
+  border-radius: 4px;
+  padding: 0.5em 0.75em;
+  font-family: "Epilogue", sans-serif;
+  font-size: 0.9em;
+  line-height: 1.4;
 }
 
-.omens13 .perk-body .editor-content {
-  padding: 0 1.8em 0 0;
-  min-height: 1.4em;
+.omens13 .perk-description > :first-child {
+  margin-top: 0;
+}
+
+.omens13 .perk-description > :last-child {
+  margin-bottom: 0;
+}
+
+.omens13 .perk-description .empty-hint {
+  font-style: italic;
+  color: var(--o13-text-muted);
+}
+
+/* Perk masqué (non choisi) : grisé, en bas de la liste. */
+.omens13 .perk-item.hidden-perk {
+  opacity: 0.4;
+}
+
+.omens13 .perk-item.hidden-perk:hover {
+  opacity: 0.75;
+}
+
+.omens13 .perk-item.hidden-perk .perk-title {
+  color: var(--o13-text-muted);
+  font-weight: normal;
+}
+
+.omens13 .perk-item.hidden-perk .perk-hide {
+  color: var(--o13-text);
 }
 
 .omens13 .add-button, .omens13 .delete-button {
@@ -939,101 +890,46 @@
 }
 
 /* -------------------------------------------- */
-/*  Éditeur ProseMirror (voir guide de référence) */
+/*  Éditeurs de texte (<prose-mirror> natif)     */
 /* -------------------------------------------- */
 
-.omens13 .editor {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  border: 1px solid var(--o13-border);
-  min-height: 120px;
-  overflow: visible;
+.omens13 prose-mirror {
+  --min-height: 120px;
+  --menu-background: var(--o13-surface-alt);
   background: var(--o13-surface);
-  border-radius: 4px;
-}
-
-.omens13 .editor a.editor-edit {
-  position: absolute;
-  top: 4px;
-  right: 6px;
-  opacity: 0.6;
-  transition: opacity 0.15s;
-  color: var(--o13-primary-light);
-}
-
-.omens13 .editor:hover a.editor-edit {
-  opacity: 1;
-}
-
-/* Crayon "Éditer" de la description de Perk : masqué par défaut (0 au lieu
-   de 0.6 comme Notes/Goal) plutôt qu'estompé, pour rester cohérent avec les
-   autres boutons de la ligne qui n'apparaissent qu'au survol (23e itération).
-   Scopé à .perk-body seulement — Notes/Goal gardent leur crayon semi-visible
-   en permanence, pas de demande de changement là-dessus. */
-.omens13 .perk-body .editor a.editor-edit {
-  opacity: 0;
-}
-
-.omens13 .perk-body .editor:hover a.editor-edit {
-  opacity: 1;
-}
-
-.omens13 .editor .menu-container menu.editor-menu {
-  display: flex !important;
-  flex-direction: row !important;
-  flex-wrap: wrap !important;
-  align-items: center !important;
-  list-style: none !important;
-  background: var(--o13-surface-alt);
-  margin: 0;
-  padding: 2px;
-}
-
-.omens13 .editor .menu-container menu.editor-menu > li {
-  display: inline-flex !important;
-  position: relative;
-}
-
-.omens13 .editor .menu-container menu.editor-menu ul {
-  display: none !important;
-  position: absolute !important;
-  top: 100% !important;
-  z-index: 300 !important;
-  background: var(--o13-surface-alt);
   border: 1px solid var(--o13-border);
+  border-radius: 4px;
+  padding: 0.4em;
 }
 
-.omens13 .editor button,
-.omens13 .editor button:hover {
-  background: unset;
-  border: unset;
-  border-radius: unset;
-  color: unset;
-  padding: unset;
-  font-size: unset;
-  /* 33e itération : les boutons de la barre d'outils ProseMirror (B, H1, listes...)
-     héritaient d'un font-weight en gras posé par le CSS coeur de Foundry, jamais
-     neutralisé jusqu'ici (absent de ce reset). */
+/* Police du thème (le CSS coeur pose sa propre police sur le contenu), et
+   marge à droite pour ne pas passer sous le crayon d'édition. */
+.omens13 .editor-content {
+  font-family: "Epilogue", sans-serif;
+  padding-right: 1.8em;
+}
+
+.omens13 .notes prose-mirror {
+  --min-height: 360px;
+}
+
+/* Les boutons du <prose-mirror> (crayon, barre d'outils) gardent le style
+   coeur de Foundry plutôt que celui des boutons du thème. */
+.omens13 prose-mirror button:not(.header-control),
+.omens13 prose-mirror button:not(.header-control):hover {
+  background: transparent;
+  border: none;
+  font-family: inherit;
   font-weight: normal;
 }
 
-/* padding-right dégagé (16e itération) pour ne jamais passer sous le crayon
-   "Éditer" (voir la même remarque sur .goal-field .editor-content plus haut) —
-   appliqué ici aussi à l'éditeur de Notes en prévention, même mécanisme de
-   bouton en position absolute.
-   font-family (21e itération) : ce bloc n'avait jamais de police explicite,
-   donc en théorie il aurait dû hériter du serif de thème posé sur .omens13
-   (Libre Caslon Text) — dans les faits, le CSS coeur de ProseMirror/Foundry
-   pose sa propre police système sur .editor-content/.ProseMirror avec une
-   spécificité qui prime sur l'héritage, d'où la police "par défaut" visible
-   à l'écran (ni Libre Caslon Text, ni Epilogue). On la fixe ici explicitement
-   sur Epilogue (police de corps de texte du thème) pour trancher, quelle que
-   soit la source du remplacement. */
-.omens13 .editor-content {
-  padding: 0.4em 1.8em 0.4em 0.4em;
-  min-height: 90px;
-  font-family: "Epilogue", sans-serif;
+.omens13 prose-mirror menu button:hover,
+.omens13 prose-mirror button.toggle:hover {
+  background: var(--o13-primary);
+}
+
+.omens13 prose-mirror button.toggle {
+  color: var(--o13-primary-light);
 }
 
 /* Titres tapés PAR L'UTILISATEUR à l'intérieur d'un texte ProseMirror (H1/H2/H3...
@@ -1085,11 +981,96 @@
   font-weight: 600;
 }
 
-.omens13-editor-save {
-  align-self: flex-end;
-  margin: 4px;
-  background: var(--o13-primary);
-  border-color: var(--o13-primary-light);
+/* -------------------------------------------- */
+/*  Fiche d'Item Perk                            */
+/* -------------------------------------------- */
+
+.omens13.perk-sheet {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75em;
+  padding: 0.75em;
+  height: 100%;
+  box-sizing: border-box;
+  background-image:
+    linear-gradient(rgba(12, 10, 10, 0.9), rgba(12, 10, 10, 0.9)),
+    url("../assets/textures/sheet-paper.png");
+  background-size: cover;
+  background-position: top center;
+}
+
+.omens13 .perk-sheet-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75em;
+  background: var(--o13-surface);
+  border: 1px solid var(--o13-border);
+  border-radius: 6px;
+  padding: 0.5em;
+}
+
+.omens13 .perk-sheet-header .perk-icon {
+  width: 64px;
+  height: 64px;
+  flex: 0 0 auto;
+  object-fit: cover;
+  border: 2px solid var(--o13-primary);
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.omens13 .perk-sheet-fields {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+}
+
+.omens13 .perk-sheet-flags {
+  display: flex;
+  gap: 1.2em;
+}
+
+.omens13 .perk-flag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.75em;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--o13-text-muted);
+  cursor: pointer;
+}
+
+.omens13.perk-sheet.owned .perk-flag.owned { color: var(--o13-owned); }
+.omens13.perk-sheet.strained .perk-flag.strain,
+.omens13.perk-sheet.strained .name-input { color: var(--o13-danger); }
+
+.omens13 .perk-sheet-description {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4em;
+  background: var(--o13-surface);
+  border: 1px solid var(--o13-border);
+  border-radius: 6px;
+  padding: 0.5em;
+}
+
+.omens13 .perk-sheet-description h2 {
+  color: var(--o13-primary-light);
+  border-bottom: 1px solid var(--o13-border);
+  padding-bottom: 0.25em;
+}
+
+.omens13 .perk-sheet-description prose-mirror {
+  flex: 1;
+  border: none;
+  background: transparent;
+  padding: 0;
 }
 
 /* -------------------------------------------- */
@@ -1321,6 +1302,29 @@
   border-color: var(--o13-text-muted);
 }
 
+/* Dernier dé Omen reçu mais pas encore résolu : le joueur peut encore tromper
+   la mort, ou succomber (bouton .succumb). */
+.omens13 .character-row.dying .name {
+  color: var(--o13-danger);
+  font-weight: 700;
+}
+
+.omens13 .succumb {
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border-color: var(--o13-text-muted);
+  color: var(--o13-text-muted);
+}
+
+.omens13 .out-of-story {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.75em;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--o13-text-muted);
+}
+
 .omens13 .wound-adjust {
   display: flex;
   gap: 0.2em;
@@ -1542,10 +1546,19 @@
   font-size: 0.8em;
 }
 
+.omens13.chat-card .modifiers-row {
+  flex-wrap: wrap;
+}
+
 .omens13.chat-card .mod {
   padding: 1px 6px;
   border-radius: 3px;
   border: 1px solid var(--o13-border);
+}
+
+.omens13.chat-card .mod.gear.broken {
+  color: var(--o13-text-muted);
+  text-decoration: line-through;
 }
 
 .omens13.chat-card .wound-banner {
@@ -1726,4 +1739,311 @@
   color: #ff5c5c;
   font-family: "Epilogue", sans-serif;
   letter-spacing: 0.04em;
+}
+
+/* Outils de l'Hôte pour rejouer une histoire. */
+.omens13 .new-story {
+  width: 100%;
+  margin-top: 0.4em;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.8em;
+}
+
+.omens13 .resurrect {
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border-color: var(--o13-owned);
+  color: var(--o13-owned);
+}
+
+/* Choix des personnages de l'histoire (Hôte). */
+.omens13 .participants-dialog {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3em;
+}
+
+.omens13 .participant-choice {
+  display: flex;
+  align-items: center;
+  gap: 0.6em;
+  padding: 0.25em 0;
+  border-bottom: 1px solid var(--o13-border);
+  cursor: pointer;
+  font-family: "Epilogue", sans-serif;
+}
+
+.omens13 .participant-choice img {
+  width: 28px;
+  height: 28px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 1px solid var(--o13-border);
+}
+
+/* Case "Masqué" de la fiche Perk : carré neutre. */
+.omens13 input.perk-hidden-toggle {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 15px;
+  height: 15px;
+  margin: 0;
+  border-radius: 3px;
+  border: 2px solid var(--o13-border);
+  background: transparent;
+  cursor: pointer;
+}
+
+.omens13 input.perk-hidden-toggle:checked {
+  background: var(--o13-text-muted);
+  border-color: var(--o13-text-muted);
+}
+
+.omens13 input.perk-hidden-toggle::before,
+.omens13 input.perk-hidden-toggle::after {
+  content: none !important;
+}
+
+.omens13.perk-sheet.hidden-perk .perk-flag.concealed { color: var(--o13-text); }
+
+/* En-tête Perks : filtre des Perks masqués à côté du bouton +. Les Perks
+   masqués sont repliés tant que le filtre n'est pas actif. */
+.omens13 .section-buttons {
+  display: flex;
+  align-items: center;
+  gap: 0.3em;
+}
+
+.omens13 .hidden-perks-filter {
+  height: 26px;
+  padding: 0 0.6em;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.85em;
+  color: var(--o13-text-muted);
+  border-color: var(--o13-border);
+}
+
+.omens13 .hidden-perks-filter.active {
+  color: var(--o13-text);
+  border-color: var(--o13-text-muted);
+}
+
+.omens13 .perk-list:not(.show-hidden) .perk-item.hidden-perk {
+  display: none;
+}
+
+/* Fenêtre de Check : boutons 0/1/2 (Edges, Flaws) et interrupteurs
+   (Omen forcé par l'Hôte, Check sans danger). */
+.omens13 .check-dialog [hidden] {
+  display: none;
+}
+
+.omens13 .segmented {
+  flex: 1;
+  display: flex;
+  gap: 0.3em;
+}
+
+.omens13 .segmented button {
+  flex: 1;
+  height: 30px;
+  font-family: "JetBrains Mono", monospace;
+  font-weight: 600;
+  color: var(--o13-text-muted);
+}
+
+.omens13 .segmented button.active {
+  background: var(--o13-primary);
+  border-color: var(--o13-primary-light);
+  color: var(--o13-text);
+}
+
+.omens13 .segmented button:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.omens13 .segmented button:disabled:hover {
+  background: var(--o13-surface-alt);
+  border-color: var(--o13-secondary);
+}
+
+.omens13 .check-dialog .toggles {
+  display: flex;
+  gap: 0.5em;
+  margin-top: 0.2em;
+}
+
+.omens13 .toggle-pill {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45em;
+  min-height: 32px;
+  padding: 0.3em 0.6em;
+  border: 1px solid var(--o13-border);
+  border-radius: 4px;
+  background: var(--o13-surface-alt);
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.75em;
+  text-transform: uppercase;
+  color: var(--o13-text-muted);
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.omens13 .toggle-pill input {
+  display: none;
+}
+
+.omens13 .toggle-pill:hover {
+  border-color: var(--o13-primary-light);
+  color: var(--o13-text);
+}
+
+.omens13 .toggle-pill:has(input:checked) {
+  background: var(--o13-primary);
+  border-color: var(--o13-primary-light);
+  color: var(--o13-text);
+}
+
+/* -------------------------------------------- */
+/*  Animations                                   */
+/* -------------------------------------------- */
+
+/* Changement d'Acte : écran de titre plein écran chez tous les joueurs.
+   Fondu au rouge sombre, titre qui monte, puis tout s'efface (clic pour fermer). */
+#omens13-act-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(ellipse at center, rgba(74, 0, 0, 0.82) 0%, rgba(10, 0, 0, 0.96) 70%);
+  cursor: pointer;
+  animation: omens13-act-overlay 5s ease-in-out forwards;
+}
+
+#omens13-act-overlay .act-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4em;
+  text-align: center;
+  animation: omens13-act-card 5s ease-out forwards;
+}
+
+#omens13-act-overlay img {
+  width: 72px;
+  height: 72px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 14px rgba(255, 60, 60, 0.7));
+}
+
+#omens13-act-overlay .act-title {
+  font-family: "Epilogue", sans-serif;
+  font-weight: 700;
+  font-size: 5rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: #ededed;
+  text-shadow: 0 0 24px rgba(201, 79, 79, 0.85), 0 0 4px #000;
+}
+
+#omens13-act-overlay .act-subtitle {
+  font-family: "Libre Caslon Text", Georgia, serif;
+  font-style: italic;
+  font-size: 1.6rem;
+  color: #c94f4f;
+  text-shadow: 0 0 8px #000;
+}
+
+@keyframes omens13-act-overlay {
+  0% { opacity: 0; }
+  15% { opacity: 1; }
+  78% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+@keyframes omens13-act-card {
+  0% { opacity: 0; transform: translateY(24px) scale(0.96); letter-spacing: 0.1em; }
+  25% { opacity: 1; transform: translateY(0) scale(1); }
+  100% { transform: translateY(-6px) scale(1.02); }
+}
+
+/* Carte de Check qui vient d'arriver : les dés sortent du sac un par un. */
+.omens13-fresh .omens13.chat-card .die {
+  animation: omens13-die-drop 0.45s cubic-bezier(0.2, 0.8, 0.3, 1.2) backwards;
+  animation-delay: calc(var(--i, 0) * 0.18s);
+}
+
+@keyframes omens13-die-drop {
+  from { opacity: 0; transform: translateY(-14px) rotate(-25deg) scale(0.6); }
+}
+
+/* Le dé Omen qui cause la Blessure : halo rouge permanent, qui pulse à l'arrivée. */
+.omens13.chat-card .die.wound {
+  box-shadow: 0 0 0 1px #ff5c5c, 0 0 10px 2px rgba(255, 60, 60, 0.75);
+}
+
+.omens13-fresh .omens13.chat-card .die.wound {
+  animation:
+    omens13-die-drop 0.45s cubic-bezier(0.2, 0.8, 0.3, 1.2) backwards,
+    omens13-wound-pulse 0.9s ease-in-out 3;
+  animation-delay: calc(var(--i, 0) * 0.18s), calc(var(--i, 0) * 0.18s + 0.45s);
+}
+
+@keyframes omens13-wound-pulse {
+  50% { box-shadow: 0 0 0 2px #ff5c5c, 0 0 18px 6px rgba(255, 40, 40, 0.95); transform: scale(1.12); }
+}
+
+/* Bandeau "Blessure infligée" : arrive avec une secousse, après les dés. */
+.omens13-fresh .omens13.chat-card .wound-banner {
+  animation: omens13-shake 0.5s ease-in-out 0.9s backwards;
+}
+
+@keyframes omens13-shake {
+  0% { opacity: 0; transform: translateX(0); }
+  20% { opacity: 1; transform: translateX(-6px); }
+  40% { transform: translateX(5px); }
+  60% { transform: translateX(-3px); }
+  80% { transform: translateX(2px); }
+  100% { transform: translateX(0); }
+}
+
+/* Dice Bag : un personnage au seuil de Blessures (mourant) pulse doucement. */
+.omens13 .character-row.dying {
+  border-radius: 4px;
+  animation: omens13-dying 2.2s ease-in-out infinite;
+}
+
+@keyframes omens13-dying {
+  0%, 100% { background: transparent; }
+  50% { background: rgba(255, 60, 60, 0.16); }
+}
+
+/* Réglage système "réduire les animations" : on garde les états, pas le mouvement. */
+@media (prefers-reduced-motion: reduce) {
+  #omens13-act-overlay .act-card,
+  .omens13-fresh .omens13.chat-card .die,
+  .omens13-fresh .omens13.chat-card .die.wound,
+  .omens13-fresh .omens13.chat-card .wound-banner,
+  .omens13 .character-row.dying {
+    animation: none;
+  }
+
+  #omens13-act-overlay {
+    animation-name: omens13-act-overlay;
+  }
+
+  .omens13 .character-row.dying {
+    background: rgba(255, 60, 60, 0.16);
+  }
 }

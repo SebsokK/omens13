@@ -19,7 +19,10 @@ export class Omens13PerkData extends foundry.abstract.TypeDataModel {
       // Strain visuel du Perk (32e itération) : aucun effet mécanique (contrairement
       // au Strain d'Aspect, qui force un Flaw), juste un repère visuel (nom en
       // rouge + fond teinté) toujours visible sur la ligne du Perk.
-      strain: new fields.BooleanField({ required: false, initial: false })
+      strain: new fields.BooleanField({ required: false, initial: false }),
+      // Masqué : le joueur n'a pas choisi ce Perk. Il reste sur la fiche, en
+      // gris et en bas de la liste.
+      hidden: new fields.BooleanField({ required: false, initial: false })
     };
   }
 }

@@ -5,13 +5,15 @@
 export async function postCheckCard(result) {
   if (!result) return;
 
-  const renderTemplate = foundry.applications?.handlebars?.renderTemplate ?? globalThis.renderTemplate;
+  const { renderTemplate } = foundry.applications.handlebars;
 
   const templateData = {
     ...result,
-    diceDisplay: result.dice.map(d => ({
+    diceDisplay: result.dice.map((d, index) => ({
       ...d,
-      used: result.used.includes(d)
+      index,
+      used: result.used.includes(d),
+      wound: d === result.woundDie
     }))
   };
 
@@ -61,11 +63,11 @@ export async function postCheckCard(result) {
 export async function postPerkCard(item) {
   if (!item) return;
 
-  const renderTemplate = foundry.applications?.handlebars?.renderTemplate ?? globalThis.renderTemplate;
+  const { renderTemplate } = foundry.applications.handlebars;
 
   const description = await foundry.applications.ux.TextEditor.implementation.enrichHTML(
     item._source.system.description || "",
-    { async: true, relativeTo: item }
+    { relativeTo: item }
   );
 
   const content = await renderTemplate("systems/omens13/templates/chat/perk-card.hbs", {
@@ -99,7 +101,7 @@ export async function postPerkCard(item) {
 export async function postCheatDeathCard(actor) {
   if (!actor) return;
 
-  const renderTemplate = foundry.applications?.handlebars?.renderTemplate ?? globalThis.renderTemplate;
+  const { renderTemplate } = foundry.applications.handlebars;
 
   const message = game.i18n.format("OMENS13.Chat.CheatDeathAnnounce", { name: actor.name });
 
@@ -116,5 +118,25 @@ export async function postCheatDeathCard(actor) {
         cheatDeathCard: true
       }
     }
+  });
+}
+
+/**
+ * Carte de chat annonçant qu'un personnage succombe (p.9), même gabarit que la
+ * carte de Cheat Death.
+ */
+export async function postSuccumbCard(actor) {
+  if (!actor) return;
+
+  const { renderTemplate } = foundry.applications.handlebars;
+  const content = await renderTemplate("systems/omens13/templates/chat/cheat-death-card.hbs", {
+    actorImg: actor.img,
+    message: game.i18n.format("OMENS13.Chat.SuccumbAnnounce", { name: actor.name })
+  });
+
+  await ChatMessage.create({
+    speaker: ChatMessage.getSpeaker({ actor }),
+    content,
+    flags: { omens13: { succumbCard: true } }
   });
 }

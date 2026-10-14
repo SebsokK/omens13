@@ -1,16 +1,27 @@
-<form class="omens13 perk-sheet" autocomplete="off">
+<div class="omens13 perk-sheet {{#if system.selected}}owned{{/if}} {{#if system.strain}}strained{{/if}} {{#if system.hidden}}hidden-perk{{/if}}">
   <header class="perk-sheet-header">
     <img class="perk-icon" src="{{item.img}}" data-action="editImage" data-edit="img" alt="{{item.name}}" />
-    <input type="text" value="{{item.name}}" data-scope="field" data-field="name" placeholder="{{localize 'OMENS13.Sheet.PerkName'}}" class="name-input" />
+    <div class="perk-sheet-fields">
+      <input type="text" name="name" value="{{item.name}}" placeholder="{{localize 'OMENS13.Sheet.PerkName'}}" class="name-input" />
+      <div class="perk-sheet-flags">
+        <label class="perk-flag owned" title="{{localize 'OMENS13.Sheet.PerkOwnedHint'}}">
+          <input type="checkbox" class="perk-owned" name="system.selected" {{checked system.selected}} />
+          {{localize "OMENS13.Sheet.PerkSelected"}}
+        </label>
+        <label class="perk-flag strain" title="{{localize 'OMENS13.Sheet.PerkStrainHint'}}">
+          <input type="checkbox" class="perk-strain-toggle" name="system.strain" {{checked system.strain}} />
+          {{localize "OMENS13.Sheet.Strain"}}
+        </label>
+        <label class="perk-flag concealed" title="{{localize 'OMENS13.Sheet.PerkHide'}}">
+          <input type="checkbox" class="perk-hidden-toggle" name="system.hidden" {{checked system.hidden}} />
+          {{localize "OMENS13.Sheet.PerkHidden"}}
+        </label>
+      </div>
+    </div>
   </header>
 
-  <label class="perk-selected-toggle">
-    <input type="checkbox" data-scope="field" data-field="system.selected" {{#if system.selected}}checked{{/if}} />
-    {{localize "OMENS13.Sheet.PerkSelected"}}
-  </label>
-
-  <section class="perk-description">
-    <p class="hint">{{localize "OMENS13.Sheet.PerkEffect"}}</p>
-    {{editor enriched.description target="system.description" button=true engine="prosemirror" collaborate=false editable=editable}}
+  <section class="perk-sheet-description">
+    <h2>{{localize "OMENS13.Sheet.PerkEffect"}}</h2>
+    <prose-mirror name="system.description" value="{{system.description}}" toggled>{{{enriched.description}}}</prose-mirror>
   </section>
-</form>
+</div>

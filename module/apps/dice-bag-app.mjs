@@ -1,4 +1,4 @@
-import { TOTAL_OMEN_DICE, ACT_THRESHOLDS } from "../helpers/constants.mjs";
+import { TOTAL_OMEN_DICE } from "../helpers/constants.mjs";
 import {
   addOmenToBag,
   removeOmenFromBag,
@@ -6,11 +6,14 @@ import {
   cheatDeath,
   undoCheatDeath,
   adjustWound,
-  resetPerActUsage,
+  succumb,
+  resetCharacter,
+  startNewStory,
+  cheatDeathBlocker,
   getOrCreateBourse,
   getBourseSync
 } from "../dice/bourse-engine.mjs";
-import { postCheatDeathCard } from "../dice/chat-card.mjs";
+import { postCheatDeathCard, postSuccumbCard } from "../dice/chat-card.mjs";
 
 const { HandlebarsApplicationMixin } = foundry.applications.api;
 const { ApplicationV2 } = foundry.applications.api;
@@ -42,7 +45,11 @@ export class Omens13DiceBagApp extends HandlebarsApplicationMixin(ApplicationV2)
       setAct: Omens13DiceBagApp.#onSetAct,
       cheatDeath: Omens13DiceBagApp.#onCheatDeath,
       undoCheatDeath: Omens13DiceBagApp.#onUndoCheatDeath,
-      adjustWound: Omens13DiceBagApp.#onAdjustWound
+      adjustWound: Omens13DiceBagApp.#onAdjustWound,
+      succumb: Omens13DiceBagApp.#onSuccumb,
+      resurrect: Omens13DiceBagApp.#onResurrect,
+      newStory: Omens13DiceBagApp.#onNewStory,
+      chooseCharacters: Omens13DiceBagApp.#onChooseCharacters
     }
   };
 
@@ -61,8 +68,9 @@ export class Omens13DiceBagApp extends HandlebarsApplicationMixin(ApplicationV2)
 
     const system = bourse.system;
 
-    const characters = game.actors
-      .filter(a => a.type === "character")
+    const allCharacters = game.actors.filter(a => a.type === "character");
+    const characters = allCharacters
+      .filter(a => system.participants.includes(a.id))
       .map(a => ({
         id: a.id,
         name: a.name,
@@ -72,29 +80,27 @@ export class Omens13DiceBagApp extends HandlebarsApplicationMixin(ApplicationV2)
         flawThreshold: a.system.wounds.flawThreshold,
         hasPermanentFlaw: a.system.wounds.hasPermanentFlaw,
         isDead: a.system.wounds.isDead,
-        canCheatDeath: a.isOwner && !a.system.cheatDeath.usedThisStory && !a.system.cheatDeath.usedThisAct,
-        // 25e itération : permet d'annuler un Cheat Death déclenché par erreur —
-        // visible dès qu'un des deux drapeaux d'usage est actif, réservé au
-        // propriétaire du personnage (même portée que le bouton Cheat Death lui-même).
-        canUndoCheatDeath: a.isOwner && (a.system.cheatDeath.usedThisStory || a.system.cheatDeath.usedThisAct),
-        canEditWounds: a.isOwner,
+        outOfStory: a.system.outOfStory,
+        canCheatDeath: a.isOwner && !cheatDeathBlocker(a, bourse),
+        canUndoCheatDeath: a.isOwner && a.system.cheatDeath.usedThisStory && !a.system.outOfStory,
+        canSuccumb: a.isOwner && a.system.wounds.isDead && !a.system.outOfStory,
+        canEditWounds: a.isOwner && !a.system.outOfStory,
+        canResurrect: game.user.isGM && a.system.outOfStory,
         woundPips: Array.from({ length: a.system.wounds.deathThreshold }, (_, i) => ({
           filled: i < a.system.wounds.value,
           isFinal: i === a.system.wounds.deathThreshold - 1
         })),
-        // 29e itération : deuxième ligne par personnage montrant les dés RÉELLEMENT
-        // en jeu devant lui — un dé Omen (rouge) par Blessure actuelle, un dé Safe
-        // (blanc) si un Cheat Death a été utilisé cette histoire (`usedThisStory` est
-        // le seul des deux drapeaux qui reste vrai à vie une fois déclenché, contrairement
-        // à `usedThisAct` qui se réinitialise à chaque Acte — voir resetPerActUsage()).
-        // La ligne n'existe dans le DOM que si elle a du contenu (`showDiceRow`), pour
-        // rester invisible tant que le personnage n'a subi ni Blessure ni Cheat Death.
-        hasCheatedDeath: a.system.cheatDeath.usedThisStory,
+        // Dés réellement posés devant le personnage : un Omen par Blessure, et le
+        // dé Safe d'un Cheat Death. Plus rien une fois retiré de l'histoire (tous
+        // ses dés sont retournés au sac, voir succumb()).
+        hasCheatedDeath: a.system.cheatDeath.usedThisStory && !a.system.outOfStory,
         woundDicePips: Array.from({ length: a.system.wounds.value }),
-        showDiceRow: a.system.wounds.value > 0 || a.system.cheatDeath.usedThisStory
+        showDiceRow: !a.system.outOfStory && (a.system.wounds.value > 0 || a.system.cheatDeath.usedThisStory)
       }));
 
-    const totalWounds = characters.reduce((sum, c) => sum + c.wounds, 0);
+    // Les Blessures de TOUS les personnages comptent, même ceux qui ne sont pas
+    // affichés : un dé posé devant quelqu'un n'est ni dans le sac ni en Réserve.
+    const totalWounds = allCharacters.reduce((sum, a) => sum + a.system.wounds.value, 0);
     const reserve = Math.max(0, TOTAL_OMEN_DICE - system.omenInBag - totalWounds);
 
     context.system = system;
@@ -103,7 +109,6 @@ export class Omens13DiceBagApp extends HandlebarsApplicationMixin(ApplicationV2)
     context.reserve = reserve;
     context.characters = characters;
     context.acts = [0, 1, 2, 3];
-    context.actThresholds = ACT_THRESHOLDS;
 
     // 29e/30e itération : la boîte "DICE BAG" n'affiche que les dés RÉELLEMENT
     // présents dans le sac, sans emplacement vide — ni pour les Safe (capacité
@@ -155,9 +160,6 @@ export class Omens13DiceBagApp extends HandlebarsApplicationMixin(ApplicationV2)
       if (!bourse) return;
       const act = Number(target.dataset.act);
       await setCurrentAct(bourse, act);
-      for (const character of game.actors.filter(a => a.type === "character")) {
-        await resetPerActUsage(character);
-      }
     } catch (err) {
       console.error("omens13 | Échec du changement d'Acte :", err);
       ui.notifications.error(`13 Omens — ${err.message ?? err}`);
@@ -176,7 +178,7 @@ export class Omens13DiceBagApp extends HandlebarsApplicationMixin(ApplicationV2)
     if (success) await postCheatDeathCard(character);
   }
 
-  /** Annule un Cheat Death déclenché par erreur (25e itération) — voir undoCheatDeath(). */
+  /** Annule un Cheat Death déclenché par erreur — voir undoCheatDeath(). */
   static async #onUndoCheatDeath(event, target) {
     const bourse = getBourseSync();
     if (!bourse) return;
@@ -188,6 +190,93 @@ export class Omens13DiceBagApp extends HandlebarsApplicationMixin(ApplicationV2)
       return;
     }
     await undoCheatDeath(character, bourse);
+  }
+
+  /** Le personnage succombe (p.9), après confirmation — voir succumb(). */
+  static async #onSuccumb(event, target) {
+    const bourse = getBourseSync();
+    const character = game.actors.get(target.dataset.actorId);
+    if (!bourse || !character?.isOwner) return;
+
+    const confirmed = await foundry.applications.api.DialogV2.confirm({
+      classes: ["omens13"],
+      window: { title: game.i18n.localize("OMENS13.Bourse.Succumb") },
+      content: `<p>${game.i18n.format("OMENS13.Bourse.SuccumbConfirm", { name: character.name })}</p>`,
+      rejectClose: false
+    });
+    if (!confirmed) return;
+
+    if (await succumb(character, bourse)) await postSuccumbCard(character);
+  }
+
+  /** Ramène un personnage retiré de l'histoire, remis à neuf (Hôte uniquement). */
+  static async #onResurrect(event, target) {
+    if (!game.user.isGM) {
+      ui.notifications.warn(game.i18n.localize("OMENS13.Bourse.HostOnly"));
+      return;
+    }
+    const character = game.actors.get(target.dataset.actorId);
+    if (character) await resetCharacter(character);
+  }
+
+  /** Choix des personnages affichés dans le Dice Bag (Hôte uniquement). */
+  static async #onChooseCharacters() {
+    if (!game.user.isGM) {
+      ui.notifications.warn(game.i18n.localize("OMENS13.Bourse.HostOnly"));
+      return;
+    }
+    const bourse = getBourseSync();
+    if (!bourse) return;
+
+    const { escapeHTML } = foundry.utils;
+    const rows = game.actors
+      .filter(a => a.type === "character")
+      .map(a => `
+        <label class="participant-choice">
+          <input type="checkbox" name="participant" value="${a.id}" ${bourse.system.participants.includes(a.id) ? "checked" : ""} />
+          <img src="${escapeHTML(a.img)}" alt="" />
+          <span>${escapeHTML(a.name)}</span>
+        </label>`)
+      .join("");
+
+    const participants = await foundry.applications.api.DialogV2.wait({
+      classes: ["omens13"],
+      window: { title: game.i18n.localize("OMENS13.Bourse.ChooseCharacters") },
+      content: `<div class="omens13 participants-dialog">
+        <p class="hint">${game.i18n.localize("OMENS13.Bourse.ChooseCharactersHint")}</p>
+        ${rows || `<p class="hint">${game.i18n.localize("OMENS13.Bourse.NoCharacters")}</p>`}
+      </div>`,
+      buttons: [
+        {
+          action: "save",
+          label: game.i18n.localize("OMENS13.StoryAspectsDialog.Save"),
+          icon: "fa-solid fa-check",
+          default: true,
+          callback: (event, button) => [...button.form.querySelectorAll("input[name=participant]:checked")].map(i => i.value)
+        },
+        { action: "cancel", label: game.i18n.localize("OMENS13.StoryAspectsDialog.Cancel"), icon: "fa-solid fa-xmark" }
+      ],
+      rejectClose: false
+    });
+    if (Array.isArray(participants)) await bourse.update({ "system.participants": participants });
+  }
+
+  /** Remet le sac et tous les personnages à zéro pour rejouer une histoire (Hôte uniquement). */
+  static async #onNewStory() {
+    if (!game.user.isGM) {
+      ui.notifications.warn(game.i18n.localize("OMENS13.Bourse.HostOnly"));
+      return;
+    }
+    const bourse = getBourseSync();
+    if (!bourse) return;
+
+    const confirmed = await foundry.applications.api.DialogV2.confirm({
+      classes: ["omens13"],
+      window: { title: game.i18n.localize("OMENS13.Bourse.NewStory") },
+      content: `<p>${game.i18n.localize("OMENS13.Bourse.NewStoryConfirm")}</p>`,
+      rejectClose: false
+    });
+    if (confirmed) await startNewStory(bourse);
   }
 
   /**

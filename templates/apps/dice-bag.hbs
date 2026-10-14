@@ -24,6 +24,11 @@
       {{else if (eq system.currentAct 3)}}{{localize "OMENS13.Bourse.ActHint3"}}
       {{/if}}
     </p>
+    {{#if isGM}}
+    <button type="button" class="new-story" data-action="newStory">
+      <i class="fa-solid fa-arrow-rotate-left"></i> {{localize "OMENS13.Bourse.NewStory"}}
+    </button>
+    {{/if}}
   </section>
 
   <section class="dice-bag-box">
@@ -55,24 +60,33 @@
   </section>
 
   <section class="wounds-tracker">
-    <h2>{{localize "OMENS13.Bourse.Wounds"}}</h2>
+    <h2>
+      {{localize "OMENS13.Bourse.Wounds"}}
+      {{#if isGM}}
+      <button type="button" class="edit-button" data-action="chooseCharacters" title="{{localize 'OMENS13.Bourse.ChooseCharacters'}}"><i class="fa-solid fa-users-gear"></i></button>
+      {{/if}}
+    </h2>
     <div class="character-list">
       {{#each characters as |character|}}
       <div class="character-entry">
-        <div class="character-row {{#if character.isDead}}dead{{else if character.hasPermanentFlaw}}critical{{/if}}">
+        <div class="character-row {{#if character.outOfStory}}dead{{else if character.isDead}}dying{{else if character.hasPermanentFlaw}}critical{{/if}}">
           <div class="portrait-wrap">
             <img class="avatar" src="{{character.img}}" alt="{{character.name}}" />
-            {{#if character.isDead}}
+            {{#if (or character.isDead character.outOfStory)}}
             <img class="death-overlay" src="systems/omens13/assets/branding/death-icon.png" alt="{{localize 'OMENS13.Bourse.FatalWound'}}" title="{{localize 'OMENS13.Bourse.FatalWound'}}" />
             {{/if}}
           </div>
           <span class="name">{{character.name}}</span>
+          {{#if character.outOfStory}}
+          <span class="out-of-story">{{localize "OMENS13.Bourse.OutOfStoryLabel"}}</span>
+          {{else}}
           <div class="wound-pips">
             {{#each character.woundPips as |pip|}}
             <span class="pip wound {{#if pip.filled}}filled{{/if}}"></span>
             {{/each}}
           </div>
           <span class="wound-count">{{character.wounds}} / {{character.deathThreshold}}</span>
+          {{/if}}
           {{#if character.canEditWounds}}
           <div class="wound-adjust">
             <button type="button" class="wound-minus" data-action="adjustWound" data-actor-id="{{character.id}}" data-delta="-1" title="{{localize 'OMENS13.Bourse.HealWound'}}" {{#unless character.wounds}}disabled{{/unless}}>
@@ -92,6 +106,16 @@
             <i class="fa-solid fa-rotate-left"></i>
           </button>
           {{/if}}
+          {{#if character.canResurrect}}
+          <button type="button" class="resurrect" data-action="resurrect" data-actor-id="{{character.id}}" title="{{localize 'OMENS13.Bourse.Resurrect'}}">
+            <i class="fa-solid fa-heart-pulse"></i>
+          </button>
+          {{/if}}
+          {{#if character.canSuccumb}}
+          <button type="button" class="succumb" data-action="succumb" data-actor-id="{{character.id}}" title="{{localize 'OMENS13.Bourse.Succumb'}}">
+            <i class="fa-solid fa-cross"></i>
+          </button>
+          {{/if}}
         </div>
         {{#if character.showDiceRow}}
         <div class="character-dice-row">
@@ -108,7 +132,7 @@
       </div>
       {{/each}}
       {{#unless characters.length}}
-      <p class="hint">{{localize "OMENS13.Bourse.NoCharacters"}}</p>
+      <p class="hint">{{#if isGM}}{{localize "OMENS13.Bourse.NoParticipantsGM"}}{{else}}{{localize "OMENS13.Bourse.NoCharacters"}}{{/if}}</p>
       {{/unless}}
     </div>
   </section>

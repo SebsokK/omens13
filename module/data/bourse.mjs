@@ -16,6 +16,9 @@ export class Omens13BourseData extends foundry.abstract.TypeDataModel {
       omenInBag: new fields.NumberField({ required: true, integer: true, min: 0, max: TOTAL_OMEN_DICE, initial: 0 }),
       // Acte courant de l'histoire : 0 = Prologue / pas commencé, 1-3 = Actes.
       currentAct: new fields.NumberField({ required: true, integer: true, min: 0, max: 3, initial: 0 }),
+      // IDs des personnages qui jouent cette histoire (choisis par l'Hôte) : seuls
+      // eux apparaissent dans le suivi des Blessures du Dice Bag.
+      participants: new fields.ArrayField(new fields.StringField({ blank: false }), { initial: [] }),
       // Journal libre (facultatif) pour que l'Hôte note l'état de la scène.
       note: new fields.StringField({ required: false, blank: true, initial: "" })
     };
