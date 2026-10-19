@@ -2,6 +2,12 @@
 
 *[Lire en français](CHANGELOG.fr.md)*
 
+## 0.2.1
+
+- **Valiant Sacrifice** (p.9): when a character one Wound from death draws an Omen Die (a Host-forced Omen counts), the player chooses before rolling: roll the dice, or sacrifice. The Check automatically succeeds, the character leaves the story and all their dice return to the bag, as when succumbing.
+- **Gear not chosen**: right-click an item to hide it; hidden items go to the end of the list, can be shown from the section header, and are left out of the Check window.
+- **Check window**: Aspects grouped (Core / Story); Aspects without a Rating are shown greyed out instead of disappearing.
+
 ## 0.2.0
 
 **Rules (checked against the rulebook)**

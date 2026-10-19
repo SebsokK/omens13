@@ -2,6 +2,12 @@
 
 *[Read in English](CHANGELOG.md)*
 
+## 0.2.1
+
+- **Sacrifice héroïque** (p.9) : quand un personnage à une Blessure de la mort tire un dé Omen (un Omen forcé par l'Hôte compte), le joueur choisit avant de lancer : lancer les dés, ou se sacrifier. Le Check réussit automatiquement, le personnage quitte l'histoire et tous ses dés retournent dans le sac, comme pour Succomber.
+- **Équipement non choisi** : clic droit sur un objet pour le masquer ; les objets masqués passent en fin de liste, s'affichent depuis l'en-tête de la section et ne sont pas proposés dans la fenêtre de Check.
+- **Fenêtre de Check** : Aspects regroupés (Fondamentaux / Histoire) ; les Aspects sans Notation sont affichés grisés au lieu de disparaître.
+
 ## 0.2.0
 
 **Règles (vérifiées avec le livret)**
