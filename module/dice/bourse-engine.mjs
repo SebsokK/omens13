@@ -109,7 +109,11 @@ async function rollDice(types) {
  * @param {number} [params.facingEvilOmen=0]  Dés Omen ajoutés directement par l'Hôte comme Flaw (Facing Evil, p.8).
  * @param {boolean} [params.harmless=false]   Check sans risque réel (p.11/23) : un Omen Die qui toucherait
  *   ne donne pas de Blessure, mais une Strain à la place, et le dé retourne au sac.
- * @returns {Promise<object>} Le résultat complet du Check (pour la carte de chat).
+ * @param {(dice: {type: string, source: string}[]) => Promise<boolean>} [params.askSacrifice]
+ *   Appelée après le tirage et avant le lancer quand un Sacrifice héroïque est possible
+ *   (voir canSacrifice()) ; renvoie true si le joueur se sacrifie.
+ * @returns {Promise<object>} Le résultat complet du Check (pour la carte de chat) ; pour un
+ *   sacrifice, `{ actor, aspectLabel, sacrifice: true, dice }`.
  */
 export async function performCheck({
   actor,
@@ -120,7 +124,8 @@ export async function performCheck({
   edges = 0,
   flaws = 0,
   facingEvilOmen = 0,
-  harmless = false
+  harmless = false,
+  askSacrifice
 } = {}) {
   const bourse = await getOrCreateBourse();
   if (!bourse) return null;
@@ -157,6 +162,12 @@ export async function performCheck({
     ...Array(forcedOmenUsed).fill(0).map(() => ({ type: "omen", source: "reserve" })),
     ...drawnFromBag.map(type => ({ type, source: "bag" }))
   ];
+
+  // Sacrifice héroïque (p.9) : décidé après le tirage, avant de lancer les dés.
+  if (askSacrifice && canSacrifice(actor, diceSpecs) && await askSacrifice(diceSpecs)) {
+    await removeFromStory(actor, bourse, { forcedOmens: forcedOmenUsed });
+    return { actor, aspectLabel, sacrifice: true, dice: diceSpecs };
+  }
 
   const { roll, values } = await rollDice(diceSpecs.map(d => d.type));
   const dice = diceSpecs.map((d, i) => ({ ...d, value: values[i] }));
@@ -413,6 +424,16 @@ export async function undoCheatDeath(actor, bourse) {
 }
 
 /**
+ * Sacrifice héroïque possible (p.9) : le personnage est à une Blessure de la
+ * mort (selon la taille du groupe) et le tirage contient au moins un dé Omen,
+ * y compris un Omen forcé par l'Hôte.
+ */
+export function canSacrifice(actor, dice) {
+  const { value, deathThreshold } = actor.system.wounds;
+  return !actor.system.outOfStory && value === deathThreshold - 1 && dice.some(d => d.type === "omen");
+}
+
+/**
  * Death and Despair (p.9) : le personnage qui a son dernier dé Omen ne participe
  * plus à l'histoire, et TOUS les dés devant lui retournent au sac — ses dés Omen
  * de Blessure comme le dé Safe d'un éventuel Cheat Death. Déclenché à la main
@@ -421,17 +442,25 @@ export async function undoCheatDeath(actor, bourse) {
  */
 export async function succumb(actor, bourse) {
   if (actor.system.outOfStory || !actor.system.wounds.isDead) return false;
+  await removeFromStory(actor, bourse);
+  return true;
+}
 
+/**
+ * Retire un personnage de l'histoire (mort ou Sacrifice héroïque) : ses dés
+ * Omen, le dé Safe d'un Cheat Death, et les Omen forcés par l'Hôte sur le
+ * Check en cours (`forcedOmens`, sortis de la Réserve) retournent au sac.
+ */
+async function removeFromStory(actor, bourse, { forcedOmens = 0 } = {}) {
   const safeDieInFront = actor.system.cheatDeath.usedThisStory ? 1 : 0;
   await bourse.update({
-    "system.omenInBag": Math.min(TOTAL_OMEN_DICE, bourse.system.omenInBag + actor.system.wounds.value),
+    "system.omenInBag": Math.min(TOTAL_OMEN_DICE, bourse.system.omenInBag + actor.system.wounds.value + forcedOmens),
     "system.safeDiceInBag": Math.min(DEFAULT_SAFE_DICE, bourse.system.safeDiceInBag + safeDieInFront)
   });
   await actor.update({
     "system.wounds.value": 0,
     "system.outOfStory": true
   });
-  return true;
 }
 
 /**

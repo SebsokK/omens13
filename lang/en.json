@@ -38,7 +38,8 @@
       "Gear": "Item used",
       "NoGear": "— None —",
       "GearEdge": "+1 Edge",
-      "GearBrokenFlaw": "broken: +1 Flaw"
+      "GearBrokenFlaw": "broken: +1 Flaw",
+      "NoRating": "no Rating"
     },
     "Sheet": {
       "CharacterTitle": "Character Sheet — 13 Omens",
@@ -86,7 +87,11 @@
       "GearRename": "Rename",
       "GearBreak": "Broken / lost",
       "GearRepair": "Repaired / found",
-      "GearDelete": "Delete"
+      "GearDelete": "Delete",
+      "GearHide": "Hide (not chosen)",
+      "GearShow": "Show again",
+      "ShowHiddenGear": "Show hidden items",
+      "HideHiddenGear": "Collapse hidden items"
     },
     "StoryAspectsDialog": {
       "Title": "Story Aspects",
@@ -153,7 +158,8 @@
       "DieSource": {
         "bag": "drawn from the bag",
         "reserve": "added by the Host"
-      }
+      },
+      "SacrificeAnnounce": "{name} valiantly sacrifices themselves for the others: {aspect} automatically succeeds. All their dice return to the bag."
     },
     "UI": {
       "DeathAwaits": "Death Awaits..."
@@ -168,6 +174,13 @@
       "Subtitle1": "The evil lies dormant… waiting.",
       "Subtitle2": "The evil reveals itself.",
       "Subtitle3": "The final reckoning."
+    },
+    "Sacrifice": {
+      "Title": "Valiant Sacrifice?",
+      "Drawn": "Dice drawn from the bag:",
+      "Hint": "{name} is at death's door and drew an Omen Die. Sacrifice: no roll, the Check automatically succeeds, but the character leaves the story and all their dice return to the bag.",
+      "Roll": "Roll the dice",
+      "Sacrifice": "Sacrifice"
     }
   }
 }

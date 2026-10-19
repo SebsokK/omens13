@@ -140,3 +140,23 @@ export async function postSuccumbCard(actor) {
     flags: { omens13: { succumbCard: true } }
   });
 }
+
+/**
+ * Carte de chat d'un Sacrifice héroïque (p.9) : réussite automatique, le
+ * personnage quitte l'histoire. Même gabarit que la carte de Cheat Death.
+ */
+export async function postSacrificeCard(actor, aspectLabel) {
+  if (!actor) return;
+
+  const { renderTemplate } = foundry.applications.handlebars;
+  const content = await renderTemplate("systems/omens13/templates/chat/cheat-death-card.hbs", {
+    actorImg: actor.img,
+    message: game.i18n.format("OMENS13.Chat.SacrificeAnnounce", { name: actor.name, aspect: aspectLabel })
+  });
+
+  await ChatMessage.create({
+    speaker: ChatMessage.getSpeaker({ actor }),
+    content,
+    flags: { omens13: { sacrificeCard: true } }
+  });
+}

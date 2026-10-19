@@ -2047,3 +2047,34 @@
     background: rgba(255, 60, 60, 0.16);
   }
 }
+
+/* Objet non choisi (masqué) : estompé, en fin de liste, replié tant que le
+   filtre de l'en-tête n'est pas actif. Distinct d'un objet cassé (barré). */
+.omens13 .gear-tag.hidden-gear {
+  opacity: 0.4;
+  border-style: dotted;
+}
+
+.omens13 .gear-tag.hidden-gear:hover {
+  opacity: 0.75;
+}
+
+.omens13 .gear-tags:not(.show-hidden) .gear-tag.hidden-gear {
+  display: none;
+}
+
+/* Fenêtre du Sacrifice héroïque : les dés tirés, puis le choix. */
+.omens13 .sacrifice-dialog .pip-row {
+  display: flex;
+  gap: 0.4em;
+  margin: 0.4em 0 0.8em;
+}
+
+.omens13 .sacrifice-dialog .pip {
+  width: 22px;
+  height: 22px;
+}
+
+.omens13 button.sacrifice {
+  border-color: var(--o13-danger);
+}

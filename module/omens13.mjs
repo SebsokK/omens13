@@ -334,7 +334,7 @@ Hooks.on("renderActorDirectory", (app, html) => {
  */
 function markOmensChatMessage(message, html) {
   const flags = message?.flags?.omens13;
-  if (!flags?.checkResult && !flags?.perkCard && !flags?.cheatDeathCard && !flags?.succumbCard) return;
+  if (!flags?.checkResult && !flags?.perkCard && !flags?.cheatDeathCard && !flags?.succumbCard && !flags?.sacrificeCard) return;
   html.classList.add("omens13-chat-message");
   // Animations d'apparition (dés, Blessure) seulement pour les messages qui
   // viennent d'arriver, pas pour tout l'historique au chargement du monde.

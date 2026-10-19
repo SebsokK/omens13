@@ -1,6 +1,6 @@
 import { CORE_ASPECT_KEYS, RATINGS, RATING_TN } from "../helpers/constants.mjs";
 import { performCheck } from "../dice/bourse-engine.mjs";
-import { postCheckCard, postPerkCard } from "../dice/chat-card.mjs";
+import { postCheckCard, postPerkCard, postSacrificeCard } from "../dice/chat-card.mjs";
 import { promptCheckOptions } from "../apps/check-dialog.mjs";
 import { promptStoryAspectLabels } from "../apps/story-aspects-dialog.mjs";
 
@@ -20,7 +20,7 @@ export class Omens13CharacterSheet extends HandlebarsApplicationMixin(ActorSheet
       togglePerk: Omens13CharacterSheet.#onTogglePerk,
       editPerk: Omens13CharacterSheet.#onEditPerk,
       togglePerkHidden: Omens13CharacterSheet.#onTogglePerkHidden,
-      toggleHiddenPerks: Omens13CharacterSheet.#onToggleHiddenPerks,
+      toggleHiddenList: Omens13CharacterSheet.#onToggleHiddenList,
       sendPerkToChat: Omens13CharacterSheet.#onSendPerkToChat,
       addGear: Omens13CharacterSheet.#onAddGear,
       useGear: Omens13CharacterSheet.#onUseGear,
@@ -45,8 +45,8 @@ export class Omens13CharacterSheet extends HandlebarsApplicationMixin(ActorSheet
    */
   #expandedPerks = new Set();
 
-  /** Les Perks masqués sont-ils affichés dans la liste ? (non par défaut, à chaque ouverture) */
-  #showHiddenPerks = false;
+  /** Perks et objets masqués affichés ? (non par défaut, à chaque ouverture) */
+  #showHidden = { perks: false, gear: false };
 
   get title() {
     return this.actor.name;
@@ -99,10 +99,16 @@ export class Omens13CharacterSheet extends HandlebarsApplicationMixin(ActorSheet
     const perkItems = this.actor.items
       .filter(i => i.type === "perk")
       .sort((a, b) => perkRank(a) - perkRank(b));
-    context.gear = system.gear.map((g, index) => ({ ...g, index }));
+    // Objets masqués (non choisis) en fin de liste ; l'index d'origine est
+    // conservé, c'est lui qui identifie l'objet dans system.gear.
+    context.gear = system.gear
+      .map((g, index) => ({ ...g, index }))
+      .sort((a, b) => a.hidden - b.hidden);
+    context.hiddenGearCount = system.gear.filter(g => g.hidden).length;
+    context.showHiddenGear = this.#showHidden.gear;
 
     context.hiddenPerkCount = perkItems.filter(i => i.system.hidden).length;
-    context.showHiddenPerks = this.#showHiddenPerks;
+    context.showHiddenPerks = this.#showHidden.perks;
     context.perks = await Promise.all(
       perkItems.map(async item => ({
         id: item.id,
@@ -141,7 +147,7 @@ export class Omens13CharacterSheet extends HandlebarsApplicationMixin(ActorSheet
       const name = input.value.trim();
       if (!name) return;
       input.value = "";
-      await this.#updateGear(gear => gear.push({ name, broken: false }));
+      await this.#updateGear(gear => gear.push({ name, broken: false, hidden: false }));
       this.element.querySelector(".gear-new")?.focus();
     };
     input.addEventListener("keydown", event => {
@@ -184,11 +190,49 @@ export class Omens13CharacterSheet extends HandlebarsApplicationMixin(ActorSheet
         onClick: (event, target) => this.#updateGear(gear => { gear[indexOf(target)].broken = false; })
       },
       {
+        label: "OMENS13.Sheet.GearHide",
+        icon: "fa-solid fa-eye-slash",
+        visible: target => !gearAt(target)?.hidden,
+        onClick: (event, target) => this.#updateGear(gear => { gear[indexOf(target)].hidden = true; })
+      },
+      {
+        label: "OMENS13.Sheet.GearShow",
+        icon: "fa-solid fa-eye",
+        visible: target => !!gearAt(target)?.hidden,
+        onClick: (event, target) => this.#updateGear(gear => { gear[indexOf(target)].hidden = false; })
+      },
+      {
         label: "OMENS13.Sheet.GearDelete",
         icon: "fa-solid fa-trash",
         onClick: (event, target) => this.#updateGear(gear => { gear.splice(indexOf(target), 1); })
       }
     ], { jQuery: false, fixed: true });
+  }
+
+  /**
+   * Sacrifice héroïque (p.9) : montre les dés tirés (sans leur valeur) et
+   * demande au joueur s'il lance les dés ou s'il se sacrifie.
+   * @returns {Promise<boolean>} true si le joueur se sacrifie.
+   */
+  async #askSacrifice(dice) {
+    const loc = key => game.i18n.localize(key);
+    const pips = dice.map(d => `<span class="pip ${d.type} filled" title="${loc(`OMENS13.Chat.Die.${d.type}`)}"></span>`).join("");
+    const choice = await foundry.applications.api.DialogV2.wait({
+      classes: ["omens13"],
+      window: { title: loc("OMENS13.Sacrifice.Title") },
+      position: { width: 420 },
+      content: `<div class="omens13 sacrifice-dialog">
+        <p>${loc("OMENS13.Sacrifice.Drawn")}</p>
+        <div class="pip-row">${pips}</div>
+        <p class="hint">${game.i18n.format("OMENS13.Sacrifice.Hint", { name: foundry.utils.escapeHTML(this.actor.name) })}</p>
+      </div>`,
+      buttons: [
+        { action: "roll", label: loc("OMENS13.Sacrifice.Roll"), icon: "fa-solid fa-dice", default: true },
+        { action: "sacrifice", label: loc("OMENS13.Sacrifice.Sacrifice"), icon: "fa-solid fa-khanda", class: "sacrifice" }
+      ],
+      rejectClose: false
+    });
+    return choice === "sacrifice";
   }
 
   /** Copie l'équipement, applique `mutate` et enregistre. */
@@ -273,29 +317,30 @@ export class Omens13CharacterSheet extends HandlebarsApplicationMixin(ActorSheet
       return;
     }
 
+    // Tous les Aspects, y compris ceux sans Notation : la fenêtre les affiche
+    // grisés (non jouables) plutôt que de les faire disparaître sans explication.
     const aspects = [
-      ...CORE_ASPECT_KEYS.map(key => ({ path: `core.${key}`, aspect: system.core[key], label: game.i18n.localize(`OMENS13.Aspect.${key}`) })),
+      ...CORE_ASPECT_KEYS.map(key => ({ group: "core", path: `core.${key}`, aspect: system.core[key], label: game.i18n.localize(`OMENS13.Aspect.${key}`) })),
       ...Object.entries(system.story).map(([key, aspect]) => ({
-        path: `story.${key}`, aspect, label: aspect.label || game.i18n.localize("OMENS13.Sheet.UnnamedAspect")
+        group: "story", path: `story.${key}`, aspect, label: aspect.label || game.i18n.localize("OMENS13.Sheet.UnnamedAspect")
       }))
-    ]
-      .map(({ path, aspect, label }) => ({ path, label, tn: RATING_TN[aspect.rating] ?? null, strained: aspect.strain }))
-      .filter(a => a.tn != null);
+    ].map(({ group, path, aspect, label }) => ({ group, path, label, tn: RATING_TN[aspect.rating] ?? null, strained: aspect.strain }));
+    const rated = aspects.filter(a => a.tn != null);
 
     // Depuis une ligne d'Aspect sans Notation, ou si aucun Aspect n'est noté.
-    if (!aspects.length || (aspectPath && !aspects.some(a => a.path === aspectPath))) {
+    if (!rated.length || (aspectPath && !rated.some(a => a.path === aspectPath))) {
       ui.notifications.warn(game.i18n.localize("OMENS13.Sheet.NoRatingWarning"));
       return;
     }
 
     const gearItem = system.gear[gearIndex];
     const title = aspectPath
-      ? game.i18n.format("OMENS13.CheckDialog.Title", { aspect: aspects.find(a => a.path === aspectPath).label })
+      ? game.i18n.format("OMENS13.CheckDialog.Title", { aspect: rated.find(a => a.path === aspectPath).label })
       : game.i18n.format("OMENS13.CheckDialog.Title", { aspect: gearItem?.name ?? "" });
 
     const options = await promptCheckOptions({
       aspects,
-      aspectPath: aspectPath ?? aspects[0].path,
+      aspectPath: aspectPath ?? rated[0].path,
       gear: system.gear,
       gearIndex,
       permanentFlaw: system.wounds.hasPermanentFlaw,
@@ -316,8 +361,13 @@ export class Omens13CharacterSheet extends HandlebarsApplicationMixin(ActorSheet
       aspectLabel: aspect.label,
       aspectPath: chosenPath,
       baseTn: aspect.tn,
-      ...checkOptions
+      ...checkOptions,
+      askSacrifice: dice => this.#askSacrifice(dice)
     });
+    if (result?.sacrifice) {
+      await postSacrificeCard(this.actor, aspect.label);
+      return;
+    }
     if (result && gear) result.gear = { name: gear.name, broken: gear.broken };
 
     await postCheckCard(result);
@@ -351,15 +401,17 @@ export class Omens13CharacterSheet extends HandlebarsApplicationMixin(ActorSheet
   }
 
   /**
-   * Affiche ou replie les Perks masqués. Bascule de classes CSS plutôt qu'un
-   * rendu complet, comme les onglets, pour ne pas fermer un éditeur ouvert.
+   * Affiche ou replie les Perks ou les objets masqués (`data-list` : "perks"
+   * ou "gear"). Bascule de classes CSS plutôt qu'un rendu complet, comme les
+   * onglets, pour ne pas fermer un éditeur ouvert.
    */
-  static #onToggleHiddenPerks(event, target) {
-    this.#showHiddenPerks = !this.#showHiddenPerks;
-    const show = this.#showHiddenPerks;
-    this.element.querySelector(".perk-list")?.classList.toggle("show-hidden", show);
+  static #onToggleHiddenList(event, target) {
+    const list = target.dataset.list;
+    const show = this.#showHidden[list] = !this.#showHidden[list];
+    this.element.querySelector(list === "gear" ? ".gear-tags" : ".perk-list")?.classList.toggle("show-hidden", show);
     target.classList.toggle("active", show);
-    target.title = game.i18n.localize(show ? "OMENS13.Sheet.HideHiddenPerks" : "OMENS13.Sheet.ShowHiddenPerks");
+    const suffix = list === "gear" ? "Gear" : "Perks";
+    target.title = game.i18n.localize(show ? `OMENS13.Sheet.HideHidden${suffix}` : `OMENS13.Sheet.ShowHidden${suffix}`);
     const icon = target.querySelector("i");
     icon?.classList.toggle("fa-eye", show);
     icon?.classList.toggle("fa-eye-slash", !show);

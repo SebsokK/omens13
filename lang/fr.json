@@ -38,7 +38,8 @@
       "Gear": "Objet utilisé",
       "NoGear": "— Aucun —",
       "GearEdge": "+1 Edge",
-      "GearBrokenFlaw": "cassé : +1 Flaw"
+      "GearBrokenFlaw": "cassé : +1 Flaw",
+      "NoRating": "sans Notation"
     },
     "Sheet": {
       "CharacterTitle": "Fiche de personnage — 13 Omens",
@@ -86,7 +87,11 @@
       "GearRename": "Renommer",
       "GearBreak": "Cassé / perdu",
       "GearRepair": "Réparé / retrouvé",
-      "GearDelete": "Supprimer"
+      "GearDelete": "Supprimer",
+      "GearHide": "Masquer (non choisi)",
+      "GearShow": "Réafficher",
+      "ShowHiddenGear": "Afficher les objets masqués",
+      "HideHiddenGear": "Replier les objets masqués"
     },
     "StoryAspectsDialog": {
       "Title": "Aspects de l'Histoire",
@@ -153,7 +158,8 @@
       "DieSource": {
         "bag": "tiré du sac",
         "reserve": "ajouté par l'Hôte"
-      }
+      },
+      "SacrificeAnnounce": "{name} se sacrifie héroïquement pour les autres : {aspect} réussit automatiquement. Tous ses dés retournent dans le sac."
     },
     "UI": {
       "DeathAwaits": "La Mort attend..."
@@ -168,6 +174,13 @@
       "Subtitle1": "Le mal sommeille… et attend.",
       "Subtitle2": "Le mal se révèle.",
       "Subtitle3": "L'heure de l'affrontement."
+    },
+    "Sacrifice": {
+      "Title": "Sacrifice héroïque ?",
+      "Drawn": "Dés tirés du sac :",
+      "Hint": "{name} est aux portes de la mort et a tiré un dé Omen. Se sacrifier : pas de lancer, le Check réussit automatiquement, mais le personnage quitte l'histoire et tous ses dés retournent dans le sac.",
+      "Roll": "Lancer les dés",
+      "Sacrifice": "Se sacrifier"
     }
   }
 }

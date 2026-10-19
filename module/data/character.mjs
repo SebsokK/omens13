@@ -60,7 +60,9 @@ export class Omens13CharacterData extends foundry.abstract.TypeDataModel {
       gear: new fields.ArrayField(
         new fields.SchemaField({
           name: new fields.StringField({ required: true, blank: true, initial: "" }),
-          broken: new fields.BooleanField({ required: true, initial: false })
+          broken: new fields.BooleanField({ required: true, initial: false }),
+          // Masqué : objet non choisi par le joueur (comme les Perks masqués).
+          hidden: new fields.BooleanField({ required: true, initial: false })
         }),
         { initial: [] }
       ),

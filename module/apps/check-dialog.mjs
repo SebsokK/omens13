@@ -30,8 +30,8 @@ function setSegmented(group, value) {
  * Flaw (p.10) : ils s'ajoutent aux valeurs saisies (voir la fiche).
  *
  * @param {object} options
- * @param {{path: string, label: string, tn: number, strained: boolean}[]} options.aspects
- *   Aspects jouables (avec une Notation).
+ * @param {{group: string, path: string, label: string, tn: number|null, strained: boolean}[]} options.aspects
+ *   Tous les Aspects ; ceux sans Notation (tn null) sont affichés mais désactivés.
  * @param {string} [options.aspectPath]   Aspect présélectionné (ex. "core.evade").
  * @param {{name: string, broken: boolean}[]} [options.gear=[]]  Équipement du personnage.
  * @param {number|null} [options.gearIndex=null]  Objet présélectionné.
@@ -43,9 +43,15 @@ export async function promptCheckOptions({ aspects, aspectPath, gear = [], gearI
   const { DialogV2 } = foundry.applications.api;
   const loc = key => game.i18n.localize(key);
 
-  const aspectOptions = aspects.map(a =>
-    `<option value="${a.path}" ${a.path === aspectPath ? "selected" : ""}>${escapeHTML(a.label)} — TN ${a.tn}</option>`
-  ).join("");
+  // Deux groupes (Fondamentaux / Histoire) ; un Aspect sans Notation reste
+  // visible mais n'est pas sélectionnable.
+  const aspectOptions = ["core", "story"].map(group => {
+    const options = aspects.filter(a => a.group === group).map(a => a.tn == null
+      ? `<option value="${a.path}" disabled>${escapeHTML(a.label)} — ${loc("OMENS13.CheckDialog.NoRating")}</option>`
+      : `<option value="${a.path}" ${a.path === aspectPath ? "selected" : ""}>${escapeHTML(a.label)} — TN ${a.tn}</option>`
+    ).join("");
+    return `<optgroup label="${loc(group === "core" ? "OMENS13.Sheet.CoreAspects" : "OMENS13.Sheet.StoryAspects")}">${options}</optgroup>`;
+  }).join("");
 
   const difficultyOptions = DIFFICULTIES.map(d =>
     `<option value="${d}" ${d === "average" ? "selected" : ""}>${loc(`OMENS13.Difficulty.${d}`)}</option>`
@@ -53,6 +59,8 @@ export async function promptCheckOptions({ aspects, aspectPath, gear = [], gearI
 
   const gearOptions = [`<option value="">${loc("OMENS13.CheckDialog.NoGear")}</option>`]
     .concat(gear.map((g, i) => {
+      // Objets non choisis absents de la liste, sauf celui qui a lancé le Check.
+      if (g.hidden && i !== gearIndex) return "";
       const effect = loc(g.broken ? "OMENS13.CheckDialog.GearBrokenFlaw" : "OMENS13.CheckDialog.GearEdge");
       return `<option value="${i}" ${i === gearIndex ? "selected" : ""}>${escapeHTML(g.name)} (${effect})</option>`;
     }))

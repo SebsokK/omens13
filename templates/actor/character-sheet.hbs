@@ -106,7 +106,7 @@
         {{localize "OMENS13.Sheet.Perks"}}
         <span class="section-buttons">
           {{#if hiddenPerkCount}}
-          <button type="button" class="hidden-perks-filter {{#if showHiddenPerks}}active{{/if}}" data-action="toggleHiddenPerks" title="{{#if showHiddenPerks}}{{localize 'OMENS13.Sheet.HideHiddenPerks'}}{{else}}{{localize 'OMENS13.Sheet.ShowHiddenPerks'}}{{/if}}">
+          <button type="button" class="hidden-perks-filter {{#if showHiddenPerks}}active{{/if}}" data-action="toggleHiddenList" data-list="perks" title="{{#if showHiddenPerks}}{{localize 'OMENS13.Sheet.HideHiddenPerks'}}{{else}}{{localize 'OMENS13.Sheet.ShowHiddenPerks'}}{{/if}}">
             <i class="fa-solid {{#if showHiddenPerks}}fa-eye{{else}}fa-eye-slash{{/if}}"></i> {{hiddenPerkCount}}
           </button>
           {{/if}}
@@ -144,11 +144,18 @@
     <section class="gear">
       <h2>
         {{localize "OMENS13.Sheet.Gear"}}
-        <button type="button" class="add-button" data-action="addGear"><i class="fa-solid fa-plus"></i></button>
+        <span class="section-buttons">
+          {{#if hiddenGearCount}}
+          <button type="button" class="hidden-perks-filter {{#if showHiddenGear}}active{{/if}}" data-action="toggleHiddenList" data-list="gear" title="{{#if showHiddenGear}}{{localize 'OMENS13.Sheet.HideHiddenGear'}}{{else}}{{localize 'OMENS13.Sheet.ShowHiddenGear'}}{{/if}}">
+            <i class="fa-solid {{#if showHiddenGear}}fa-eye{{else}}fa-eye-slash{{/if}}"></i> {{hiddenGearCount}}
+          </button>
+          {{/if}}
+          <button type="button" class="add-button" data-action="addGear"><i class="fa-solid fa-plus"></i></button>
+        </span>
       </h2>
-      <div class="gear-tags">
+      <div class="gear-tags {{#if showHiddenGear}}show-hidden{{/if}}">
         {{#each gear as |g|}}
-        <span class="gear-tag {{#if g.broken}}broken{{/if}}" data-action="useGear" data-index="{{g.index}}" title="{{#if g.broken}}{{localize 'OMENS13.Sheet.GearBrokenHint'}}{{else}}{{localize 'OMENS13.Sheet.GearTagHint'}}{{/if}}">
+        <span class="gear-tag {{#if g.broken}}broken{{/if}} {{#if g.hidden}}hidden-gear{{/if}}" data-action="useGear" data-index="{{g.index}}" title="{{#if g.broken}}{{localize 'OMENS13.Sheet.GearBrokenHint'}}{{else}}{{localize 'OMENS13.Sheet.GearTagHint'}}{{/if}}">
           {{#if g.broken}}<i class="fa-solid fa-heart-crack"></i>{{/if}}{{g.name}}
         </span>
         {{/each}}
