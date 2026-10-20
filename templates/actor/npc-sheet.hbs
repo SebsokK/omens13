@@ -1,10 +1,18 @@
 <div class="omens13 npc-sheet">
   <header class="npc-sheet-header">
     <img class="portrait" src="{{actor.img}}" data-action="editImage" data-edit="img" alt="{{actor.name}}" />
-    <input type="text" name="name" value="{{actor.name}}" placeholder="{{localize 'OMENS13.Sheet.Name'}}" class="name-input" />
+    <div class="npc-sheet-fields">
+      <input type="text" name="name" value="{{actor.name}}" placeholder="{{localize 'OMENS13.Sheet.Name'}}" class="name-input" />
+      <input type="text" name="system.role" value="{{system.role}}" placeholder="{{localize 'OMENS13.Npc.RolePlaceholder'}}" class="traits-input" />
+      <label class="npc-goal">
+        <span class="goal-label">{{localize "OMENS13.Npc.Goal"}}</span>
+        <input type="text" name="system.goal" value="{{system.goal}}" placeholder="{{localize 'OMENS13.Npc.GoalPlaceholder'}}" />
+      </label>
+    </div>
   </header>
 
   <section class="npc-notes">
-    <prose-mirror name="system.notes" value="{{system.notes}}" toggled>{{{enriched.notes}}}</prose-mirror>
+    <h2>{{localize "OMENS13.Sheet.Notes"}}</h2>
+    <prose-mirror name="system.notes" value="{{system.notes}}" toggled>{{#if enriched.notes}}{{{enriched.notes}}}{{else}}<p class="empty-hint">{{localize "OMENS13.Npc.NotesEmpty"}}</p>{{/if}}</prose-mirror>
   </section>
 </div>

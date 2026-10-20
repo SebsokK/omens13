@@ -2120,9 +2120,28 @@
   cursor: pointer;
 }
 
-.omens13 .npc-sheet-header .name-input {
+/* Nom, rôle et objectif empilés à droite du portrait, comme sur la fiche de personnage. */
+.omens13 .npc-sheet-fields {
   flex: 1;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+}
+
+.omens13 .npc-goal {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2em;
+  margin-top: 0.4em;
+}
+
+.omens13 .npc-goal input {
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--o13-border);
+  border-radius: 0;
+  font-family: "Epilogue", sans-serif;
 }
 
 .omens13 .npc-notes {
@@ -2136,9 +2155,29 @@
   padding: 0.5em;
 }
 
+.omens13 .npc-notes {
+  gap: 0.4em;
+}
+
+.omens13 .npc-notes h2 {
+  color: var(--o13-primary-light);
+  border-bottom: 1px solid var(--o13-border);
+  padding-bottom: 0.25em;
+}
+
 .omens13 .npc-notes prose-mirror {
   flex: 1;
   border: none;
   background: transparent;
   padding: 0;
+}
+
+/* Crayon d'édition toujours visible ici (le bloc est souvent vide). */
+.omens13 .npc-notes prose-mirror button.toggle:enabled {
+  display: block;
+}
+
+.omens13 .npc-notes .empty-hint {
+  font-style: italic;
+  color: var(--o13-text-muted);
 }

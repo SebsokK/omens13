@@ -184,6 +184,12 @@
       "Hint": "{name} is at death's door and drew an Omen Die. Sacrifice: no roll, the Check automatically succeeds, but the character leaves the story and all their dice return to the bag.",
       "Roll": "Roll the dice",
       "Sacrifice": "Sacrifice"
+    },
+    "Npc": {
+      "RolePlaceholder": "Role (e.g. Asylum warden)",
+      "Goal": "Goal",
+      "GoalPlaceholder": "What this NPC wants",
+      "NotesEmpty": "Click the ✎ pencil at the top right to write."
     }
   },
   "TYPES": {

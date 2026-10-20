@@ -184,6 +184,12 @@
       "Hint": "{name} est aux portes de la mort et a tiré un dé Omen. Se sacrifier : pas de lancer, le Check réussit automatiquement, mais le personnage quitte l'histoire et tous ses dés retournent dans le sac.",
       "Roll": "Lancer les dés",
       "Sacrifice": "Se sacrifier"
+    },
+    "Npc": {
+      "RolePlaceholder": "Rôle (ex. Gardien de l'asile)",
+      "Goal": "Objectif",
+      "GoalPlaceholder": "Ce que veut ce PNJ",
+      "NotesEmpty": "Cliquez sur le crayon ✎ en haut à droite pour écrire."
     }
   },
   "TYPES": {
