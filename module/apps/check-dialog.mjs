@@ -8,9 +8,9 @@ function segmented(name, values, value = 0) {
   return `<div class="segmented" data-name="${name}"><input type="hidden" name="${name}" value="${value}" />${buttons}</div>`;
 }
 
-/** Interrupteur (case à cocher affichée comme un bouton). */
-function toggle(name, label, icon) {
-  return `<label class="toggle-pill"><input type="checkbox" name="${name}" /><i class="${icon}"></i> ${label}</label>`;
+/** Interrupteur (case à cocher affichée comme un bouton), avec une info-bulle. */
+function toggle(name, label, icon, hint) {
+  return `<label class="toggle-pill" title="${escapeHTML(hint)}"><input type="checkbox" name="${name}" /><i class="${icon}"></i> ${label}</label>`;
 }
 
 /** Sélectionne une valeur d'un sélecteur à boutons. */
@@ -21,8 +21,8 @@ function setSegmented(group, value) {
 
 /**
  * Boîte de dialogue de préparation d'un Check : Aspect, difficulté, objet
- * utilisé, Edges et Flaws (boutons 0/1/2), Facing Evil (un Omen forcé par
- * l'Hôte, p.8) et Harmless (interrupteurs).
+ * utilisé, Edges et Flaws (boutons 0/1/2), Facing Evil (l'Hôte ajoute un dé
+ * Omen au Check, p.8) et Harmless (interrupteurs).
  *
  * Flaws obligatoires (p.9) : un Aspect Strained impose 1 Flaw, et 3 Blessures
  * ou plus en imposent un autre, d'une source distincte — le minimum du champ
@@ -92,8 +92,8 @@ export async function promptCheckOptions({ aspects, aspectPath, gear = [], gearI
         ${segmented("flaws", [0, 1, 2])}
       </div>
       <div class="toggles">
-        ${toggle("facingEvilOmen", loc("OMENS13.CheckDialog.FacingEvil"), "fa-solid fa-skull")}
-        ${toggle("harmless", loc("OMENS13.CheckDialog.Harmless"), "fa-solid fa-shield-heart")}
+        ${toggle("facingEvilOmen", loc("OMENS13.CheckDialog.FacingEvil"), "fa-solid fa-skull", loc("OMENS13.CheckDialog.FacingEvilHint"))}
+        ${toggle("harmless", loc("OMENS13.CheckDialog.Harmless"), "fa-solid fa-shield-heart", loc("OMENS13.CheckDialog.HarmlessHint"))}
       </div>
     </div>
   `;

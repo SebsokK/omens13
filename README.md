@@ -32,11 +32,11 @@ Compatible with Foundry V13 and V14.
 - Traits, Goal and Notes with Foundry's rich text editor.
 
 ### Checks
-- The Check window lets you choose the **Aspect**, the **difficulty**, the **item used**, **Edges and Flaws** (0/1/2 buttons), and two toggles: **Host-forced Omen** (Facing Evil) and **Harmless Check**.
+- The Check window lets you choose the **Aspect**, the **difficulty**, the **item used**, **Edges and Flaws** (0/1/2 buttons), and two toggles: **Facing Evil** (the Host adds an Omen Die to the Check) and **Harmless Check**.
 - Mandatory Flaws are applied for you: Strained Aspect, and 3 Wounds or more (a separate source).
 - An intact item gives an Edge, a broken one a Flaw.
 - Dice are drawn at random from the shared bag, the two highest or lowest are kept, and the result is compared to the TN. An Omen Die at or under the current Act causes a Wound (one per Check at most), or a Strain on a Harmless Check.
-- The chat card shows every die (Safe or Omen, from the bag or forced by the Host); the Omen Die that wounds glows red.
+- The chat card shows every die (Safe or Omen, from the bag or added by Facing Evil); the Omen Die that wounds glows red.
 - **Dice So Nice** supported: Safe Dice in black and white, Omen Dice in red.
 
 ### The Dice Bag

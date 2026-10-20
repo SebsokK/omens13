@@ -28,7 +28,7 @@
       "Difficulty": "Difficulté",
       "Edges": "Edges",
       "Flaws": "Flaws",
-      "FacingEvil": "Omen forcé par l'Hôte",
+      "FacingEvil": "Facing Evil",
       "Harmless": "Check sans danger",
       "StrainedHint": "Cet Aspect est Strained : le jet inclut obligatoirement au moins 1 Flaw.",
       "PermanentFlawHint": "Ce personnage a 3 Blessures ou plus : le jet inclut obligatoirement au moins 1 Flaw (source distincte du Strain d'Aspect).",
@@ -39,7 +39,9 @@
       "NoGear": "— Aucun —",
       "GearEdge": "+1 Edge",
       "GearBrokenFlaw": "cassé : +1 Flaw",
-      "NoRating": "sans Notation"
+      "NoRating": "sans Notation",
+      "FacingEvilHint": "Le personnage affronte directement le mal : l'Hôte ajoute un dé Omen au Check, en plus des dés tirés du sac. Il compte comme un Flaw et doit être lancé.",
+      "HarmlessHint": "Check sans danger : un dé Omen inférieur ou égal à l'Acte ne donne pas de Blessure, mais une Strain sur l'Aspect lancé."
     },
     "Sheet": {
       "CharacterTitle": "Fiche de personnage — 13 Omens",

@@ -32,11 +32,11 @@ Compatible avec Foundry V13 et V14.
 - Traits, Objectif et Notes avec l'éditeur de texte de Foundry.
 
 ### Les Checks
-- La fenêtre de Check permet de choisir l'**Aspect**, la **difficulté**, l'**objet utilisé**, les **Edges et Flaws** (boutons 0/1/2), et deux interrupteurs : **Omen forcé par l'Hôte** (Facing Evil) et **Check sans danger** (Harmless).
+- La fenêtre de Check permet de choisir l'**Aspect**, la **difficulté**, l'**objet utilisé**, les **Edges et Flaws** (boutons 0/1/2), et deux interrupteurs : **Facing Evil** (l'Hôte ajoute un dé Omen au Check) et **Check sans danger** (Harmless).
 - Les Flaws obligatoires sont appliqués automatiquement : Aspect en Strain, et 3 Blessures ou plus (une source distincte).
 - Un objet intact donne un Edge, un objet cassé un Flaw.
 - Les dés sont tirés au hasard dans le sac commun, on garde les deux plus hauts ou les deux plus bas, et on compare au TN. Un dé Omen inférieur ou égal à l'Acte en cours inflige une Blessure (une seule par Check au maximum), ou une Strain sur un Check sans danger.
-- La carte de chat montre chaque dé (Safe ou Omen, tiré du sac ou forcé par l'Hôte) ; le dé Omen qui blesse brille en rouge.
+- La carte de chat montre chaque dé (Safe ou Omen, tiré du sac ou ajouté par Facing Evil) ; le dé Omen qui blesse brille en rouge.
 - Compatible **Dice So Nice** : dés Safe en noir et blanc, dés Omen en rouge.
 
 ### Le Dice Bag

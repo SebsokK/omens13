@@ -28,7 +28,7 @@
       "Difficulty": "Difficulty",
       "Edges": "Edges",
       "Flaws": "Flaws",
-      "FacingEvil": "Host-forced Omen",
+      "FacingEvil": "Facing Evil",
       "Harmless": "Harmless Check",
       "StrainedHint": "This Aspect is Strained: the Check includes at least 1 Flaw.",
       "PermanentFlawHint": "This character has 3 or more Wounds: the Check includes at least 1 Flaw (a source distinct from Aspect Strain).",
@@ -39,7 +39,9 @@
       "NoGear": "— None —",
       "GearEdge": "+1 Edge",
       "GearBrokenFlaw": "broken: +1 Flaw",
-      "NoRating": "no Rating"
+      "NoRating": "no Rating",
+      "FacingEvilHint": "The character directly interacts with the evil: the Host adds an Omen Die to the Check, on top of the dice drawn from the bag. It counts as a Flaw and must be rolled.",
+      "HarmlessHint": "Harmless Check: an Omen Die at or under the current Act gives no Wound, but a Strain on the rolled Aspect."
     },
     "Sheet": {
       "CharacterTitle": "Character Sheet — 13 Omens",
