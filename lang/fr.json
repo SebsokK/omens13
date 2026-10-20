@@ -93,7 +93,8 @@
       "GearHide": "Masquer (non choisi)",
       "GearShow": "Réafficher",
       "ShowHiddenGear": "Afficher les objets masqués",
-      "HideHiddenGear": "Replier les objets masqués"
+      "HideHiddenGear": "Replier les objets masqués",
+      "NpcTitle": "Fiche de PNJ — 13 Omens"
     },
     "StoryAspectsDialog": {
       "Title": "Aspects de l'Histoire",
@@ -183,6 +184,16 @@
       "Hint": "{name} est aux portes de la mort et a tiré un dé Omen. Se sacrifier : pas de lancer, le Check réussit automatiquement, mais le personnage quitte l'histoire et tous ses dés retournent dans le sac.",
       "Roll": "Lancer les dés",
       "Sacrifice": "Se sacrifier"
+    }
+  },
+  "TYPES": {
+    "Actor": {
+      "character": "Personnage",
+      "npc": "PNJ",
+      "bourse": "Dice Bag"
+    },
+    "Item": {
+      "perk": "Perk"
     }
   }
 }

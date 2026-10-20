@@ -93,7 +93,8 @@
       "GearHide": "Hide (not chosen)",
       "GearShow": "Show again",
       "ShowHiddenGear": "Show hidden items",
-      "HideHiddenGear": "Collapse hidden items"
+      "HideHiddenGear": "Collapse hidden items",
+      "NpcTitle": "NPC sheet — 13 Omens"
     },
     "StoryAspectsDialog": {
       "Title": "Story Aspects",
@@ -183,6 +184,16 @@
       "Hint": "{name} is at death's door and drew an Omen Die. Sacrifice: no roll, the Check automatically succeeds, but the character leaves the story and all their dice return to the bag.",
       "Roll": "Roll the dice",
       "Sacrifice": "Sacrifice"
+    }
+  },
+  "TYPES": {
+    "Actor": {
+      "character": "Character",
+      "npc": "NPC",
+      "bourse": "Dice Bag"
+    },
+    "Item": {
+      "perk": "Perk"
     }
   }
 }

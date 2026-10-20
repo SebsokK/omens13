@@ -2078,3 +2078,67 @@
 .omens13 button.sacrifice {
   border-color: var(--o13-danger);
 }
+
+/* -------------------------------------------- */
+/*  Fiche de PNJ                                 */
+/* -------------------------------------------- */
+
+/* Avatar et nom en tête, puis un bloc de notes qui occupe toute la page. */
+.omens13.npc-sheet {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75em;
+  padding: 0.75em;
+  height: 100%;
+  box-sizing: border-box;
+  background-image:
+    linear-gradient(rgba(12, 10, 10, 0.9), rgba(12, 10, 10, 0.9)),
+    url("../assets/textures/sheet-paper.png");
+  background-size: cover;
+  background-position: top center;
+}
+
+.omens13 .npc-sheet-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75em;
+  background: var(--o13-surface);
+  border: 1px solid var(--o13-border);
+  border-radius: 6px;
+  padding: 0.5em;
+}
+
+/* Même taille que le portrait de la fiche de personnage. */
+.omens13 .npc-sheet-header .portrait {
+  width: 110px;
+  height: 150px;
+  flex: 0 0 auto;
+  object-fit: cover;
+  object-position: top center;
+  border: 2px solid var(--o13-primary);
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.omens13 .npc-sheet-header .name-input {
+  flex: 1;
+  min-width: 0;
+}
+
+.omens13 .npc-notes {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--o13-surface);
+  border: 1px solid var(--o13-border);
+  border-radius: 6px;
+  padding: 0.5em;
+}
+
+.omens13 .npc-notes prose-mirror {
+  flex: 1;
+  border: none;
+  background: transparent;
+  padding: 0;
+}

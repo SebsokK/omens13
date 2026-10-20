@@ -1,0 +1,10 @@
+<div class="omens13 npc-sheet">
+  <header class="npc-sheet-header">
+    <img class="portrait" src="{{actor.img}}" data-action="editImage" data-edit="img" alt="{{actor.name}}" />
+    <input type="text" name="name" value="{{actor.name}}" placeholder="{{localize 'OMENS13.Sheet.Name'}}" class="name-input" />
+  </header>
+
+  <section class="npc-notes">
+    <prose-mirror name="system.notes" value="{{system.notes}}" toggled>{{{enriched.notes}}}</prose-mirror>
+  </section>
+</div>

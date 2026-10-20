@@ -2,8 +2,11 @@ import { SYSTEM_ID, DSN_COLORSET_SAFE, DSN_COLORSET_OMEN } from "./helpers/const
 import { Omens13CharacterData } from "./data/character.mjs";
 import { Omens13BourseData } from "./data/bourse.mjs";
 import { Omens13PerkData } from "./data/perk.mjs";
+import { Omens13NpcData } from "./data/npc.mjs";
+import { Omens13Actor } from "./documents/actor.mjs";
 import { Omens13CharacterSheet } from "./sheets/actor-character-sheet.mjs";
 import { Omens13PerkItemSheet } from "./sheets/item-perk-sheet.mjs";
+import { Omens13NpcSheet } from "./sheets/actor-npc-sheet.mjs";
 import { Omens13DiceBagApp } from "./apps/dice-bag-app.mjs";
 import { getOrCreateBourse, getBourseSync, cheatDeath, cheatDeathBlocker } from "./dice/bourse-engine.mjs";
 import { postCheatDeathCard } from "./dice/chat-card.mjs";
@@ -26,9 +29,11 @@ Hooks.once("init", () => {
     default: { right: 16, bottom: 84 }
   });
 
-  // --- DataModels ---
+  // --- Documents et DataModels ---
+  CONFIG.Actor.documentClass = Omens13Actor;
   CONFIG.Actor.dataModels = {
     character: Omens13CharacterData,
+    npc: Omens13NpcData,
     bourse: Omens13BourseData
   };
   // Perk (20e itération) : Item embarqué remplaçant l'ancien ArrayField
@@ -48,6 +53,12 @@ Hooks.once("init", () => {
     types: ["character"],
     makeDefault: true,
     label: "OMENS13.Sheet.CharacterTitle"
+  });
+
+  Actors.registerSheet(SYSTEM_ID, Omens13NpcSheet, {
+    types: ["npc"],
+    makeDefault: true,
+    label: "OMENS13.Sheet.NpcTitle"
   });
 
   Items.registerSheet(SYSTEM_ID, Omens13PerkItemSheet, {

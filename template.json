@@ -1,7 +1,8 @@
 {
   "Actor": {
-    "types": ["character", "bourse"],
+    "types": ["character", "npc", "bourse"],
     "character": {},
+    "npc": {},
     "bourse": {}
   },
   "Item": {
