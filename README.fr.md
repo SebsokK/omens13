@@ -31,6 +31,9 @@ Compatible avec Foundry V13 et V14.
 - **Équipement** en étiquettes : un clic sur un objet lance un Check avec lui, un clic droit permet de le renommer, de le marquer **cassé ou perdu** (grisé et barré, conservé au cas où il serait réparé ou retrouvé) ou de le supprimer.
 - Traits, Objectif et Notes avec l'éditeur de texte de Foundry.
 
+### Fiche de PNJ
+- Une fiche légère pour mettre un PNJ en scène : portrait (repris pour le token), nom, rôle, objectif et une page de notes. Les PNJ ne font pas de Check et n'apparaissent pas dans le Dice Bag.
+
 ### Les Checks
 - La fenêtre de Check permet de choisir l'**Aspect**, la **difficulté**, l'**objet utilisé**, les **Edges et Flaws** (boutons 0/1/2), et deux interrupteurs : **Facing Evil** (l'Hôte ajoute un dé Omen au Check) et **Check sans danger** (Harmless).
 - Les Flaws obligatoires sont appliqués automatiquement : Aspect en Strain, et 3 Blessures ou plus (une source distincte).

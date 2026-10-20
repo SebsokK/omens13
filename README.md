@@ -31,6 +31,9 @@ Compatible with Foundry V13 and V14.
 - **Gear** as tags: click an item to make a Check with it, right-click to rename it, mark it **broken or lost** (greyed and struck through, kept in case it gets repaired or found), or delete it.
 - Traits, Goal and Notes with Foundry's rich text editor.
 
+### NPC sheet
+- A light sheet to put an NPC on the scene: portrait (also used for the token), name, role, goal, and a page of notes. NPCs don't make Checks and don't appear in the Dice Bag.
+
 ### Checks
 - The Check window lets you choose the **Aspect**, the **difficulty**, the **item used**, **Edges and Flaws** (0/1/2 buttons), and two toggles: **Facing Evil** (the Host adds an Omen Die to the Check) and **Harmless Check**.
 - Mandatory Flaws are applied for you: Strained Aspect, and 3 Wounds or more (a separate source).

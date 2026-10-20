@@ -2,6 +2,11 @@
 
 *[Lire en français](CHANGELOG.fr.md)*
 
+## 0.3.0
+
+- **NPC sheet**: new NPC actor type, mainly to place a token with a portrait. Portrait (same size as the character sheet's, also used for the token while it hasn't been customised), name, role, goal, and a full-page Notes block. NPCs don't appear in the Dice Bag.
+- **Actor creation**: actor and item types are translated (Character, NPC, Perk), and the Dice Bag is no longer offered, since it is unique and created automatically.
+
 ## 0.2.2
 
 - **Check window**: the Host-added Omen toggle is now called **Facing Evil**, the rulebook term (p.8) already shown on the chat card. Tooltips explain Facing Evil and Harmless Check.

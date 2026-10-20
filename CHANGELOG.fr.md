@@ -2,6 +2,11 @@
 
 *[Read in English](CHANGELOG.md)*
 
+## 0.3.0
+
+- **Fiche de PNJ** : nouveau type d'Acteur PNJ, surtout pour poser un token avec un portrait. Portrait (même taille que celui de la fiche de personnage, repris pour le token tant qu'il n'a pas été personnalisé), nom, rôle, objectif et un bloc de Notes sur toute la page. Les PNJ n'apparaissent pas dans le Dice Bag.
+- **Création d'Acteur** : les types d'Acteur et d'Item sont traduits (Personnage, PNJ, Perk), et le Dice Bag n'est plus proposé, puisqu'il est unique et créé automatiquement.
+
 ## 0.2.2
 
 - **Fenêtre de Check** : l'interrupteur de l'Omen ajouté par l'Hôte s'appelle maintenant **Facing Evil**, le terme du livret (p.8) déjà affiché sur la carte de chat. Des info-bulles expliquent Facing Evil et le Check sans danger.
