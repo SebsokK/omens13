@@ -2,6 +2,10 @@
 
 *[Read in English](CHANGELOG.md)*
 
+## 0.2.2
+
+- **Fenêtre de Check** : l'interrupteur de l'Omen ajouté par l'Hôte s'appelle maintenant **Facing Evil**, le terme du livret (p.8) déjà affiché sur la carte de chat. Des info-bulles expliquent Facing Evil et le Check sans danger.
+
 ## 0.2.1
 
 - **Sacrifice héroïque** (p.9) : quand un personnage à une Blessure de la mort tire un dé Omen (un Omen forcé par l'Hôte compte), le joueur choisit avant de lancer : lancer les dés, ou se sacrifier. Le Check réussit automatiquement, le personnage quitte l'histoire et tous ses dés retournent dans le sac, comme pour Succomber.

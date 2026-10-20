@@ -2,6 +2,10 @@
 
 *[Lire en français](CHANGELOG.fr.md)*
 
+## 0.2.2
+
+- **Check window**: the Host-added Omen toggle is now called **Facing Evil**, the rulebook term (p.8) already shown on the chat card. Tooltips explain Facing Evil and Harmless Check.
+
 ## 0.2.1
 
 - **Valiant Sacrifice** (p.9): when a character one Wound from death draws an Omen Die (a Host-forced Omen counts), the player chooses before rolling: roll the dice, or sacrifice. The Check automatically succeeds, the character leaves the story and all their dice return to the bag, as when succumbing.
